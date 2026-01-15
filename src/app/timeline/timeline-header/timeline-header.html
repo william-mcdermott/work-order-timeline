@@ -1,0 +1,5 @@
+<div class="grid-header">
+  <div class="col" *ngFor="let c of columns; trackBy: trackByKey" [style.width.px]="c.widthPx">
+    {{ c.label }}
+  </div>
+</div>
