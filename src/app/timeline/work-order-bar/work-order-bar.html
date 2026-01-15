@@ -1,25 +1,13 @@
-<div
-  class="work-bar"
-  [style.left.px]="leftPx"
-  [style.width.px]="widthPx"
-  (click)="stop($event)"
->
-  <div class="work-bar__content">
-    <div class="work-bar__name" [title]="bar.name">{{ bar.name }}</div>
+<div class="bar" [class]="'bar bar--' + bar.status" [style.left.px]="leftPx" [style.width.px]="widthPx">
+  <div class="bar__label">{{ bar.name }}</div>
+  <div class="badge" [class]="'badge badge--' + bar.status">
+    {{ statusLabel(bar.status) }}
+  </div>
 
-    <div class="status-pill" [attr.data-status]="bar.status">
-      {{ bar.status }}
-    </div>
+  <button class="kebab" type="button" (click)="onToggleMenu($event)">⋯</button>
 
-    <button type="button" class="dots" aria-label="Actions" (click)="onToggleMenu($event)">
-      ⋯
-    </button>
-
-    <div class="menu" *ngIf="menuOpen" (click)="stop($event)">
-      <button type="button" class="menu__item" (click)="onEdit($event)">Edit</button>
-      <button type="button" class="menu__item menu__item--danger" (click)="onDelete($event)">
-        Delete
-      </button>
-    </div>
+  <div class="menu" *ngIf="menuOpen">
+    <button type="button" (click)="edit.emit(bar.id)">Edit</button>
+    <button type="button" (click)="delete.emit(bar.id)">Delete</button>
   </div>
 </div>

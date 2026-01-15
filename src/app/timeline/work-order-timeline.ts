@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 
-import { TimelineHeaderComponent, TimelineColumnVm as HeaderColumnVm } from './timeline-header/timeline-header';
-import { TimelineGridComponent, TimelineColumnVm as GridColumnVm } from './timeline-grid/timeline-grid';
+import {
+  TimelineHeaderComponent,
+  TimelineColumnVm as HeaderColumnVm,
+} from './timeline-header/timeline-header';
+import {
+  TimelineGridComponent,
+  TimelineColumnVm as GridColumnVm,
+} from './timeline-grid/timeline-grid';
 import {
   WorkOrderPanelComponent,
   PanelMode,
@@ -39,18 +40,13 @@ type WorkOrder = {
   name: string;
   status: WorkOrderStatus;
   startDate: string; // ISO
-  endDate: string;   // ISO
+  endDate: string; // ISO
 };
 
 @Component({
   selector: 'app-work-order-timeline',
   standalone: true,
-  imports: [
-    CommonModule,
-    TimelineHeaderComponent,
-    TimelineGridComponent,
-    WorkOrderPanelComponent,
-  ],
+  imports: [CommonModule, TimelineHeaderComponent, TimelineGridComponent, WorkOrderPanelComponent],
   templateUrl: './work-order-timeline.html',
   styleUrls: ['./work-order-timeline.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,22 +72,106 @@ export class WorkOrderTimelineComponent {
   ];
 
   workOrders: WorkOrder[] = [
-    { id: 'wo-1',  workCenterId: 'wc-1', name: 'Extrude Batch 1042', status: 'complete',    startDate: '2026-01-03', endDate: '2026-01-06' },
-    { id: 'wo-2',  workCenterId: 'wc-1', name: 'Extrude Batch 1043', status: 'open',        startDate: '2026-01-09', endDate: '2026-01-12' },
-    { id: 'wo-3',  workCenterId: 'wc-1', name: 'Extrude Batch 1044', status: 'in-progress', startDate: '2026-01-15', endDate: '2026-01-19' },
+    {
+      id: 'wo-1',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1042',
+      status: 'complete',
+      startDate: '2026-01-03',
+      endDate: '2026-01-06',
+    },
+    {
+      id: 'wo-2',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1043',
+      status: 'open',
+      startDate: '2026-01-09',
+      endDate: '2026-01-12',
+    },
+    {
+      id: 'wo-3',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1044',
+      status: 'in-progress',
+      startDate: '2026-01-15',
+      endDate: '2026-01-19',
+    },
 
-    { id: 'wo-4',  workCenterId: 'wc-2', name: 'Mill Housing A',     status: 'in-progress', startDate: '2026-01-07', endDate: '2026-01-13' },
-    { id: 'wo-5',  workCenterId: 'wc-2', name: 'Drill Plate Set 2',  status: 'blocked',     startDate: '2026-01-16', endDate: '2026-01-18' },
+    {
+      id: 'wo-4',
+      workCenterId: 'wc-2',
+      name: 'Mill Housing A',
+      status: 'in-progress',
+      startDate: '2026-01-07',
+      endDate: '2026-01-13',
+    },
+    {
+      id: 'wo-5',
+      workCenterId: 'wc-2',
+      name: 'Drill Plate Set 2',
+      status: 'blocked',
+      startDate: '2026-01-16',
+      endDate: '2026-01-18',
+    },
 
-    { id: 'wo-6',  workCenterId: 'wc-3', name: 'Assemble Unit K',    status: 'open',        startDate: '2026-01-05', endDate: '2026-01-08' },
-    { id: 'wo-7',  workCenterId: 'wc-3', name: 'Assemble Unit L',    status: 'complete',    startDate: '2026-01-10', endDate: '2026-01-11' },
-    { id: 'wo-8',  workCenterId: 'wc-3', name: 'Assemble Unit M',    status: 'blocked',     startDate: '2026-01-21', endDate: '2026-01-24' },
+    {
+      id: 'wo-6',
+      workCenterId: 'wc-3',
+      name: 'Assemble Unit K',
+      status: 'open',
+      startDate: '2026-01-05',
+      endDate: '2026-01-08',
+    },
+    {
+      id: 'wo-7',
+      workCenterId: 'wc-3',
+      name: 'Assemble Unit L',
+      status: 'complete',
+      startDate: '2026-01-10',
+      endDate: '2026-01-11',
+    },
+    {
+      id: 'wo-8',
+      workCenterId: 'wc-3',
+      name: 'Assemble Unit M',
+      status: 'blocked',
+      startDate: '2026-01-21',
+      endDate: '2026-01-24',
+    },
 
-    { id: 'wo-9',  workCenterId: 'wc-4', name: 'QC Audit 7A',        status: 'in-progress', startDate: '2026-01-02', endDate: '2026-01-09' },
-    { id: 'wo-10', workCenterId: 'wc-4', name: 'Incoming Insp. Lot', status: 'open',        startDate: '2026-01-14', endDate: '2026-01-15' },
+    {
+      id: 'wo-9',
+      workCenterId: 'wc-4',
+      name: 'QC Audit 7A',
+      status: 'in-progress',
+      startDate: '2026-01-02',
+      endDate: '2026-01-09',
+    },
+    {
+      id: 'wo-10',
+      workCenterId: 'wc-4',
+      name: 'Incoming Insp. Lot',
+      status: 'open',
+      startDate: '2026-01-14',
+      endDate: '2026-01-15',
+    },
 
-    { id: 'wo-11', workCenterId: 'wc-5', name: 'Pack Run 55',        status: 'open',        startDate: '2026-01-08', endDate: '2026-01-10' },
-    { id: 'wo-12', workCenterId: 'wc-5', name: 'Pack Run 56',        status: 'complete',    startDate: '2026-01-18', endDate: '2026-01-20' },
+    {
+      id: 'wo-11',
+      workCenterId: 'wc-5',
+      name: 'Pack Run 55',
+      status: 'open',
+      startDate: '2026-01-08',
+      endDate: '2026-01-10',
+    },
+    {
+      id: 'wo-12',
+      workCenterId: 'wc-5',
+      name: 'Pack Run 56',
+      status: 'complete',
+      startDate: '2026-01-18',
+      endDate: '2026-01-20',
+    },
   ];
 
   /* ================================
@@ -163,7 +243,7 @@ export class WorkOrderTimelineComponent {
   }
 
   headerColumns(): HeaderColumnVm[] {
-    return this.columns.map(c => ({
+    return this.columns.map((c) => ({
       key: c.key,
       label: c.label,
       widthPx: this.colWidthPx(c),
@@ -171,7 +251,7 @@ export class WorkOrderTimelineComponent {
   }
 
   gridColumns(): GridColumnVm[] {
-    return this.columns.map(c => ({
+    return this.columns.map((c) => ({
       key: c.key,
       widthPx: this.colWidthPx(c),
     }));
@@ -210,7 +290,7 @@ export class WorkOrderTimelineComponent {
      ================================ */
 
   barsVm() {
-    return this.workOrders.map(w => ({
+    return this.workOrders.map((w) => ({
       id: w.id,
       workCenterId: w.workCenterId,
       name: w.name,
@@ -246,7 +326,7 @@ export class WorkOrderTimelineComponent {
   }
 
   openEdit(id: string) {
-    const w = this.workOrders.find(o => o.id === id);
+    const w = this.workOrders.find((o) => o.id === id);
     if (!w) return;
 
     this.closeMenu();
@@ -260,7 +340,7 @@ export class WorkOrderTimelineComponent {
 
   deleteBar(id: string) {
     this.closeMenu();
-    this.workOrders = this.workOrders.filter(w => w.id !== id);
+    this.workOrders = this.workOrders.filter((w) => w.id !== id);
     this.saveWorkOrders();
   }
 
@@ -284,7 +364,7 @@ export class WorkOrderTimelineComponent {
     if (this.panelMode === 'create') {
       this.workOrders = [...this.workOrders, candidate];
     } else {
-      this.workOrders = this.workOrders.map(w => (w.id === candidate.id ? candidate : w));
+      this.workOrders = this.workOrders.map((w) => (w.id === candidate.id ? candidate : w));
     }
 
     this.saveWorkOrders();
@@ -328,9 +408,9 @@ export class WorkOrderTimelineComponent {
     const aEnd = parseIso(candidate.endDate);
 
     return this.workOrders
-      .filter(w => w.workCenterId === candidate.workCenterId)
-      .filter(w => w.id !== excludeId)
-      .some(w => {
+      .filter((w) => w.workCenterId === candidate.workCenterId)
+      .filter((w) => w.id !== excludeId)
+      .some((w) => {
         const bStart = parseIso(w.startDate);
         const bEnd = parseIso(w.endDate);
         return aStart <= bEnd && bStart <= aEnd;
@@ -373,13 +453,19 @@ export class WorkOrderTimelineComponent {
 
   private buildWeekColumns(totalDays: number): TimelineColumn[] {
     const weeks = Math.ceil(totalDays / 7);
-    return Array.from({ length: weeks }).map((_, i) => ({
-      key: `w-${i}`,
-      label: `Week ${i + 1}`,
-      days: 7,
-    }));
-  }
 
+    return Array.from({ length: weeks }).map((_, i) => {
+      const start = addDays(this.timelineStartDate, i * 7);
+      const end = addDays(start, 6);
+
+      return {
+        key: `w-${i}`,
+        label: `${toShortDate(start)}–${toShortDate(end)}`,
+        days: 7,
+      };
+    });
+  }
+  
   private buildMonthColumns(totalDays: number): TimelineColumn[] {
     const cols: TimelineColumn[] = [];
     let cursor = this.timelineStartDate;

@@ -12,7 +12,13 @@
 
       <div class="field">
         <label class="label">Work Order Name</label>
-        <input class="input" type="text" formControlName="name" placeholder="e.g., Assemble Unit K" />
+        <input
+          #nameInput
+          class="input"
+          type="text"
+          formControlName="name"
+          placeholder="e.g., Assemble Unit K"
+        />
         <div class="error" *ngIf="showNameRequired()">Name is required.</div>
       </div>
 

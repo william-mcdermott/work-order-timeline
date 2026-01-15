@@ -1,11 +1,15 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   Output,
+  ViewChild,
   inject,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -22,7 +26,7 @@ export type WorkOrderPanelInput = {
   name: string;
   status: WorkOrderStatus;
   startDate: string; // ISO: YYYY-MM-DD
-  endDate: string;   // ISO: YYYY-MM-DD
+  endDate: string; // ISO: YYYY-MM-DD
 };
 
 export type WorkOrderPanelSubmit = WorkOrderPanelInput;
@@ -37,7 +41,7 @@ type StatusOption = { value: WorkOrderStatus; label: string };
   styleUrls: ['./work-order-panel.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WorkOrderPanelComponent {
+export class WorkOrderPanelComponent implements AfterViewInit {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -53,6 +57,17 @@ export class WorkOrderPanelComponent {
   /** Let parent clear overlap error when user modifies form */
   @Output() changed = new EventEmitter<void>();
 
+  @ViewChild('nameInput') nameInput!: ElementRef<HTMLInputElement>;
+
+  ngAfterViewInit(): void {
+    queueMicrotask(() => this.nameInput?.nativeElement?.focus());
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc() {
+    this.close.emit();
+  }
+
   statusOptions: StatusOption[] = [
     { value: 'open', label: 'Open' },
     { value: 'in-progress', label: 'In Progress' },
@@ -63,7 +78,10 @@ export class WorkOrderPanelComponent {
   form = this.fb.group(
     {
       name: this.fb.control<string>('', { nonNullable: true, validators: [Validators.required] }),
-      status: this.fb.control<WorkOrderStatus>('open', { nonNullable: true, validators: [Validators.required] }),
+      status: this.fb.control<WorkOrderStatus>('open', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
       startDate: this.fb.control<NgbDateStruct | null>(null, { validators: [Validators.required] }),
       endDate: this.fb.control<NgbDateStruct | null>(null, { validators: [Validators.required] }),
     },
@@ -171,7 +189,7 @@ export class WorkOrderPanelComponent {
 function isoToStruct(iso: string): NgbDateStruct | null {
   // expects YYYY-MM-DD
   if (!iso || iso.length < 10) return null;
-  const [y, m, d] = iso.split('-').map(n => Number(n));
+  const [y, m, d] = iso.split('-').map((n) => Number(n));
   if (!y || !m || !d) return null;
   return { year: y, month: m, day: d };
 }

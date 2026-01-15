@@ -29,6 +29,13 @@ export class WorkOrderBarComponent {
   @Output() edit = new EventEmitter<string>();
   @Output() delete = new EventEmitter<string>();
 
+  statusLabel(s: 'open' | 'in-progress' | 'complete' | 'blocked'): string {
+    if (s === 'open') return 'Open';
+    if (s === 'in-progress') return 'In Progress';
+    if (s === 'complete') return 'Complete';
+    return 'Blocked';
+  }
+
   stop(evt: MouseEvent) {
     evt.stopPropagation();
   }
