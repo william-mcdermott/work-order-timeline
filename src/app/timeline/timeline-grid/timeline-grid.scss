@@ -1,0 +1,22 @@
+.grid-body {
+  background: #ffffff;
+}
+
+.row {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.row-track {
+  position: relative;
+  height: 56px;
+  display: flex;
+}
+
+.cell {
+  border-left: 1px solid #edf2f7;
+}
+
+/* Hover highlight on right side only */
+.row:hover .row-track {
+  background: #f8fafc;
+}

@@ -17,4 +17,6 @@ export type TimelineColumnVm = {
 })
 export class TimelineHeaderComponent {
   @Input({ required: true }) columns!: TimelineColumnVm[];
+
+  trackByKey = (_: number, c: TimelineColumnVm) => c.key;
 }

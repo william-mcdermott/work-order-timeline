@@ -6,12 +6,30 @@
       <div class="label">Timescale:</div>
 
       <div class="seg">
-        <button type="button" class="seg__btn" [class.is-active]="timescale==='day'"
-          (click)="setTimescale('day')">Day</button>
-        <button type="button" class="seg__btn" [class.is-active]="timescale==='week'"
-          (click)="setTimescale('week')">Week</button>
-        <button type="button" class="seg__btn" [class.is-active]="timescale==='month'"
-          (click)="setTimescale('month')">Month</button>
+        <button
+          type="button"
+          class="seg__btn"
+          [class.is-active]="timescale === 'day'"
+          (click)="setTimescale('day')"
+        >
+          Day
+        </button>
+        <button
+          type="button"
+          class="seg__btn"
+          [class.is-active]="timescale === 'week'"
+          (click)="setTimescale('week')"
+        >
+          Week
+        </button>
+        <button
+          type="button"
+          class="seg__btn"
+          [class.is-active]="timescale === 'month'"
+          (click)="setTimescale('month')"
+        >
+          Month
+        </button>
       </div>
     </div>
   </div>
@@ -31,77 +49,79 @@
       <div class="timeline__right">
         <div class="scroll" #scrollEl>
           <div class="scroll__content" [style.width.px]="totalWidthPx()">
-
-            <!-- Header (extracted) -->
+            <!-- Header -->
             <app-timeline-header [columns]="headerColumns()"></app-timeline-header>
 
-            <!-- Rows -->
-            <div class="grid-body">
-              <div class="row" *ngFor="let wc of workCenters; trackBy: trackById">
-                <div class="row-track" (click)="openCreateFromClick(wc.id, $event)">
-                  <div class="cell" *ngFor="let c of columns; trackBy: trackByCol" [style.width.px]="colWidthPx(c)">
-                  </div>
+            <!-- Grid -->
+            <app-timeline-grid
+              [workCenters]="workCenters"
+              [columns]="gridColumns()"
+              [bars]="bars"
+              [pixelsPerDay]="pixelsPerDay"
+              [openMenuBarId]="openMenuBarId"
+              (rowClick)="openCreateFromClick($event.workCenterId, $event.event)"
+              (toggleMenu)="toggleMenu($event.id, $event.event)"
+              (edit)="openEdit($event)"
+              (delete)="deleteBar($event)"
+            ></app-timeline-grid>
 
-                  <app-work-order-bar *ngFor="let bar of barsFor(wc.id); trackBy: trackByBar" [bar]="bar"
-                    [leftPx]="barLeftPx(bar)" [widthPx]="barWidthPx(bar)" [menuOpen]="openMenuBarId === bar.id"
-                    (toggleMenu)="toggleMenu($event.id, $event.event)" (edit)="openEdit($event)"
-                    (delete)="deleteBar($event)"></app-work-order-bar>
-                </div>
-              </div>
-            </div>
-
+            <!-- Today line -->
             <div class="today-line" [style.left.px]="todayLineLeftPx()"></div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- PANEL -->
-<div class="overlay" *ngIf="panelOpen" (click)="closePanel()">
-  <aside class="panel" (click)="stopRowClick($event)">
-    <header class="panel__header">
-      <div class="panel__title">Work Order Details</div>
-      <button class="icon-btn" type="button" (click)="closePanel()">✕</button>
-    </header>
+  <!-- PANEL -->
+  <div class="overlay" *ngIf="panelOpen" (click)="closePanel()">
+    <aside class="panel" (click)="stopRowClick($event)">
+      <header class="panel__header">
+        <div class="panel__title">Work Order Details</div>
+        <button class="icon-btn" type="button" (click)="closePanel()">✕</button>
+      </header>
 
-    <div class="panel__body">
-      <div class="field">
-        <label class="label">Work Order Name</label>
-        <input class="input" type="text" [(ngModel)]="panelName" placeholder="e.g., Assemble Unit K" />
+      <div class="panel__body">
+        <div class="field">
+          <label class="label">Work Order Name</label>
+          <input
+            class="input"
+            type="text"
+            [(ngModel)]="panelName"
+            placeholder="e.g., Assemble Unit K"
+          />
+        </div>
+
+        <div class="field">
+          <label class="label">Status</label>
+          <select class="input" [(ngModel)]="panelStatus">
+            <option value="open">Open</option>
+            <option value="in-progress">In Progress</option>
+            <option value="complete">Complete</option>
+            <option value="blocked">Blocked</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label">Start Day</label>
+          <input class="input" type="number" [(ngModel)]="panelStartDay" />
+        </div>
+
+        <div class="field">
+          <label class="label">End Day</label>
+          <input class="input" type="number" [(ngModel)]="panelEndDay" />
+        </div>
+
+        <!-- @upgrade: Replace day inputs with ngb-datepicker + ISO dates -->
+        <!-- @upgrade: Replace ngModel with Reactive Forms + validators + inline overlap error -->
       </div>
 
-      <div class="field">
-        <label class="label">Status</label>
-        <select class="input" [(ngModel)]="panelStatus">
-          <option value="open">Open</option>
-          <option value="in-progress">In Progress</option>
-          <option value="complete">Complete</option>
-          <option value="blocked">Blocked</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label class="label">Start Day</label>
-        <input class="input" type="number" [(ngModel)]="panelStartDay" />
-      </div>
-
-      <div class="field">
-        <label class="label">End Day</label>
-        <input class="input" type="number" [(ngModel)]="panelEndDay" />
-      </div>
-
-      <!-- @upgrade: Replace day inputs with ngb-datepicker + ISO dates -->
-      <!-- @upgrade: Replace ngModel with Reactive Forms + validators + inline overlap error -->
-    </div>
-
-    <footer class="panel__footer">
-      <button class="btn btn--ghost" type="button" (click)="closePanel()">Cancel</button>
-      <button class="btn btn--primary" type="button" (click)="submitPanel()">
-        {{ panelMode === 'edit' ? 'Save' : 'Create' }}
-      </button>
-    </footer>
-  </aside>
-</div>
+      <footer class="panel__footer">
+        <button class="btn btn--ghost" type="button" (click)="closePanel()">Cancel</button>
+        <button class="btn btn--primary" type="button" (click)="submitPanel()">
+          {{ panelMode === 'edit' ? 'Save' : 'Create' }}
+        </button>
+      </footer>
+    </aside>
+  </div>
 </div>

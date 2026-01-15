@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { WorkOrderBarComponent } from './work-order-bar/work-order-bar';
-import { TimelineHeaderComponent, TimelineColumnVm } from './timeline-header/timeline-header';
+
+import { TimelineHeaderComponent, TimelineColumnVm as HeaderColumnVm } from './timeline-header/timeline-header';
+import { TimelineGridComponent, TimelineColumnVm as GridColumnVm } from './timeline-grid/timeline-grid';
 
 type WorkCenter = { id: string; name: string };
 type Timescale = 'day' | 'week' | 'month';
@@ -12,7 +13,7 @@ type WorkOrderStatus = 'open' | 'in-progress' | 'complete' | 'blocked';
 type TimelineColumn = {
   key: string;
   label: string;
-  days: number;
+  days: number; // used to compute width per column
 };
 
 type WorkOrderBar = {
@@ -29,7 +30,7 @@ type PanelMode = 'create' | 'edit';
 @Component({
   selector: 'app-work-order-timeline',
   standalone: true,
-  imports: [CommonModule, FormsModule, WorkOrderBarComponent, TimelineHeaderComponent],
+  imports: [CommonModule, FormsModule, TimelineHeaderComponent, TimelineGridComponent],
   templateUrl: './work-order-timeline.html',
   styleUrls: ['./work-order-timeline.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,14 +59,19 @@ export class WorkOrderTimelineComponent {
   bars: WorkOrderBar[] = [
     { id: 'wo-1', workCenterId: 'wc-1', name: 'Extrude Batch 1042', status: 'complete', startDay: 2, endDay: 6 },
     { id: 'wo-2', workCenterId: 'wc-1', name: 'Extrude Batch 1043', status: 'open', startDay: 9, endDay: 11 },
+
     { id: 'wo-3', workCenterId: 'wc-2', name: 'Mill Housing A', status: 'in-progress', startDay: 8, endDay: 16 },
+
     { id: 'wo-4', workCenterId: 'wc-3', name: 'Assemble Unit K', status: 'open', startDay: 5, endDay: 7 },
     { id: 'wo-5', workCenterId: 'wc-3', name: 'Assemble Unit L', status: 'blocked', startDay: 12, endDay: 15 },
+
     { id: 'wo-6', workCenterId: 'wc-4', name: 'QC Audit 7A', status: 'in-progress', startDay: 0, endDay: 13 },
   ];
 
+  // menu state
   openMenuBarId: string | null = null;
 
+  // panel state (temporary ngModel panel)
   panelOpen = false;
   panelMode: PanelMode = 'create';
   panelWorkCenterId: string | null = null;
@@ -81,10 +87,14 @@ export class WorkOrderTimelineComponent {
     queueMicrotask(() => this.centerScrollOnToday());
   }
 
+  // ---------------- Zoom ----------------
+
   setTimescale(ts: Timescale) {
     if (this.timescale === ts) return;
+
     this.timescale = ts;
     this.applyTimescale(ts);
+
     queueMicrotask(() => this.centerScrollOnToday());
   }
 
@@ -96,13 +106,16 @@ export class WorkOrderTimelineComponent {
       this.columns = this.buildDayColumns(this.totalDays);
       return;
     }
+
     if (ts === 'week') {
-      this.pixelsPerDay = 20;
-      this.totalDays = 112;
+      this.pixelsPerDay = 20; // 140px/week
+      this.totalDays = 112; // 16 weeks
       this.todayDayIndex = 56;
       this.columns = this.buildWeekColumns(this.totalDays);
       return;
     }
+
+    // month
     this.pixelsPerDay = 8;
     this.totalDays = 365;
     this.todayDayIndex = 182;
@@ -117,11 +130,17 @@ export class WorkOrderTimelineComponent {
     return c.days * this.pixelsPerDay;
   }
 
-  headerColumns(): TimelineColumnVm[] {
-    // maps to a VM with widthPx so the header component stays dumb
+  headerColumns(): HeaderColumnVm[] {
     return this.columns.map(c => ({
       key: c.key,
       label: c.label,
+      widthPx: this.colWidthPx(c),
+    }));
+  }
+
+  gridColumns(): GridColumnVm[] {
+    return this.columns.map(c => ({
+      key: c.key,
       widthPx: this.colWidthPx(c),
     }));
   }
@@ -137,18 +156,7 @@ export class WorkOrderTimelineComponent {
     el.scrollLeft = Math.max(0, target);
   }
 
-  barsFor(workCenterId: string): WorkOrderBar[] {
-    return this.bars.filter(b => b.workCenterId === workCenterId);
-  }
-
-  barLeftPx(b: WorkOrderBar): number {
-    return b.startDay * this.pixelsPerDay + 8;
-  }
-
-  barWidthPx(b: WorkOrderBar): number {
-    const daysInclusive = (b.endDay - b.startDay) + 1;
-    return Math.max(1, daysInclusive * this.pixelsPerDay - 16);
-  }
+  // ---------------- Row click → Create ----------------
 
   openCreateFromClick(workCenterId: string, evt: MouseEvent) {
     this.closeMenu();
@@ -176,6 +184,8 @@ export class WorkOrderTimelineComponent {
     this.panelStatus = 'open';
   }
 
+  // ---------------- Edit / Delete ----------------
+
   openEdit(barId: string) {
     const bar = this.bars.find(b => b.id === barId);
     if (!bar) return;
@@ -192,6 +202,13 @@ export class WorkOrderTimelineComponent {
     this.panelStartDay = bar.startDay;
     this.panelEndDay = bar.endDay;
   }
+
+  deleteBar(barId: string) {
+    this.closeMenu();
+    this.bars = this.bars.filter(b => b.id !== barId);
+  }
+
+  // ---------------- Panel submit ----------------
 
   submitPanel() {
     const wcId = this.panelWorkCenterId;
@@ -244,17 +261,14 @@ export class WorkOrderTimelineComponent {
     this.closePanel();
   }
 
-  deleteBar(barId: string) {
-    this.closeMenu();
-    this.bars = this.bars.filter(b => b.id !== barId);
-  }
-
   closePanel() {
     this.panelOpen = false;
     this.panelMode = 'create';
     this.panelEditingId = null;
     this.panelWorkCenterId = null;
   }
+
+  // ---------------- Menu state ----------------
 
   toggleMenu(barId: string, evt: MouseEvent) {
     evt.stopPropagation();
@@ -273,6 +287,8 @@ export class WorkOrderTimelineComponent {
     evt.stopPropagation();
   }
 
+  // ---------------- Overlap ----------------
+
   hasOverlap(candidate: WorkOrderBar, excludeId?: string): boolean {
     return this.bars
       .filter(b => b.workCenterId === candidate.workCenterId)
@@ -287,6 +303,8 @@ export class WorkOrderTimelineComponent {
   clampDay(d: number): number {
     return Math.max(0, Math.min(this.totalDays - 1, d));
   }
+
+  // ---------------- Columns (static labels for now) ----------------
 
   private buildDayColumns(totalDays: number): TimelineColumn[] {
     return Array.from({ length: totalDays }).map((_, i) => ({
@@ -316,7 +334,11 @@ export class WorkOrderTimelineComponent {
     while (dayCursor < totalDays) {
       const len = monthLengths[m % monthLengths.length];
       const days = Math.min(len, totalDays - dayCursor);
-      cols.push({ key: `m-${m}`, label: `Month ${m + 1}`, days });
+      cols.push({
+        key: `m-${m}`,
+        label: `Month ${m + 1}`,
+        days,
+      });
       dayCursor += days;
       m++;
     }
@@ -324,7 +346,6 @@ export class WorkOrderTimelineComponent {
     return cols;
   }
 
+  // trackbys (mostly used by left list)
   trackById = (_: number, wc: WorkCenter) => wc.id;
-  trackByCol = (_: number, c: TimelineColumn) => c.key;
-  trackByBar = (_: number, b: WorkOrderBar) => b.id;
 }

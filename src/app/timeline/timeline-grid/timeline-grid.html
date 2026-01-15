@@ -1,0 +1,22 @@
+<div class="grid-body">
+  <div class="row" *ngFor="let wc of workCenters; trackBy: trackByWc">
+    <div class="row-track" (click)="onRowClick(wc.id, $event)">
+      <div
+        class="cell"
+        *ngFor="let c of columns; trackBy: trackByCol"
+        [style.width.px]="c.widthPx"
+      ></div>
+
+      <app-work-order-bar
+        *ngFor="let bar of barsFor(wc.id); trackBy: trackByBar"
+        [bar]="bar"
+        [leftPx]="barLeftPx(bar)"
+        [widthPx]="barWidthPx(bar)"
+        [menuOpen]="openMenuBarId === bar.id"
+        (toggleMenu)="toggleMenu.emit($event)"
+        (edit)="edit.emit($event)"
+        (delete)="delete.emit($event)"
+      ></app-work-order-bar>
+    </div>
+  </div>
+</div>
