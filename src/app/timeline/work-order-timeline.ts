@@ -42,10 +42,6 @@ type WorkOrder = {
   endDate: string;   // ISO
 };
 
-/* ================================
-   Component
-   ================================ */
-
 @Component({
   selector: 'app-work-order-timeline',
   standalone: true,
@@ -65,6 +61,8 @@ export class WorkOrderTimelineComponent {
   @ViewChild('scrollEl', { static: true })
   scrollEl!: ElementRef<HTMLDivElement>;
 
+  private readonly LS_KEY = 'work-order-timeline.workOrders.v1';
+
   /* ================================
      Static data
      ================================ */
@@ -78,30 +76,22 @@ export class WorkOrderTimelineComponent {
   ];
 
   workOrders: WorkOrder[] = [
-    {
-      id: 'wo-1',
-      workCenterId: 'wc-1',
-      name: 'Extrude Batch 1042',
-      status: 'complete',
-      startDate: '2026-01-10',
-      endDate: '2026-01-14',
-    },
-    {
-      id: 'wo-2',
-      workCenterId: 'wc-1',
-      name: 'Extrude Batch 1043',
-      status: 'open',
-      startDate: '2026-01-18',
-      endDate: '2026-01-20',
-    },
-    {
-      id: 'wo-3',
-      workCenterId: 'wc-3',
-      name: 'Assemble Unit K',
-      status: 'in-progress',
-      startDate: '2026-01-13',
-      endDate: '2026-01-17',
-    },
+    { id: 'wo-1',  workCenterId: 'wc-1', name: 'Extrude Batch 1042', status: 'complete',    startDate: '2026-01-03', endDate: '2026-01-06' },
+    { id: 'wo-2',  workCenterId: 'wc-1', name: 'Extrude Batch 1043', status: 'open',        startDate: '2026-01-09', endDate: '2026-01-12' },
+    { id: 'wo-3',  workCenterId: 'wc-1', name: 'Extrude Batch 1044', status: 'in-progress', startDate: '2026-01-15', endDate: '2026-01-19' },
+
+    { id: 'wo-4',  workCenterId: 'wc-2', name: 'Mill Housing A',     status: 'in-progress', startDate: '2026-01-07', endDate: '2026-01-13' },
+    { id: 'wo-5',  workCenterId: 'wc-2', name: 'Drill Plate Set 2',  status: 'blocked',     startDate: '2026-01-16', endDate: '2026-01-18' },
+
+    { id: 'wo-6',  workCenterId: 'wc-3', name: 'Assemble Unit K',    status: 'open',        startDate: '2026-01-05', endDate: '2026-01-08' },
+    { id: 'wo-7',  workCenterId: 'wc-3', name: 'Assemble Unit L',    status: 'complete',    startDate: '2026-01-10', endDate: '2026-01-11' },
+    { id: 'wo-8',  workCenterId: 'wc-3', name: 'Assemble Unit M',    status: 'blocked',     startDate: '2026-01-21', endDate: '2026-01-24' },
+
+    { id: 'wo-9',  workCenterId: 'wc-4', name: 'QC Audit 7A',        status: 'in-progress', startDate: '2026-01-02', endDate: '2026-01-09' },
+    { id: 'wo-10', workCenterId: 'wc-4', name: 'Incoming Insp. Lot', status: 'open',        startDate: '2026-01-14', endDate: '2026-01-15' },
+
+    { id: 'wo-11', workCenterId: 'wc-5', name: 'Pack Run 55',        status: 'open',        startDate: '2026-01-08', endDate: '2026-01-10' },
+    { id: 'wo-12', workCenterId: 'wc-5', name: 'Pack Run 56',        status: 'complete',    startDate: '2026-01-18', endDate: '2026-01-20' },
   ];
 
   /* ================================
@@ -112,9 +102,7 @@ export class WorkOrderTimelineComponent {
   pixelsPerDay = 56;
   totalDays = 29;
 
-  /** Day 0 anchor for the timeline */
   timelineStartDate = startOfDay(addDays(new Date(), -14));
-
   columns: TimelineColumn[] = [];
 
   /* ================================
@@ -130,6 +118,9 @@ export class WorkOrderTimelineComponent {
   panelExternalError: string | null = null;
 
   constructor() {
+    const saved = this.loadWorkOrders();
+    if (saved) this.workOrders = saved;
+
     this.applyTimescale(this.timescale);
     queueMicrotask(() => this.centerOnToday());
   }
@@ -152,14 +143,12 @@ export class WorkOrderTimelineComponent {
       this.columns = this.buildDayColumns(this.totalDays);
       return;
     }
-
     if (ts === 'week') {
       this.pixelsPerDay = 20;
       this.totalDays = 112;
       this.columns = this.buildWeekColumns(this.totalDays);
       return;
     }
-
     this.pixelsPerDay = 8;
     this.totalDays = 365;
     this.columns = this.buildMonthColumns(this.totalDays);
@@ -189,16 +178,15 @@ export class WorkOrderTimelineComponent {
   }
 
   /* ================================
-     Date ↔ pixel helpers
+     Date ↔ pixel
      ================================ */
 
   dateToDayIndex(iso: string): number {
-    const d = parseIso(iso);
-    return diffDays(this.timelineStartDate, d);
+    return diffDays(this.timelineStartDate, parseIso(iso));
   }
 
-  dayIndexToIso(dayIndex: number): string {
-    return toIso(addDays(this.timelineStartDate, dayIndex));
+  dayIndexToIso(day: number): string {
+    return toIso(addDays(this.timelineStartDate, day));
   }
 
   todayLineLeftPx(): number {
@@ -206,15 +194,19 @@ export class WorkOrderTimelineComponent {
     return todayIndex * this.pixelsPerDay + this.pixelsPerDay / 2;
   }
 
+  goToToday(evt?: MouseEvent) {
+    evt?.stopPropagation();
+    this.centerOnToday();
+  }
+
   private centerOnToday() {
-    const el = this.scrollEl?.nativeElement;
-    if (!el) return;
+    const el = this.scrollEl.nativeElement;
     const target = this.todayLineLeftPx() - el.clientWidth / 2;
     el.scrollLeft = Math.max(0, target);
   }
 
   /* ================================
-     Grid → bars mapping
+     Bars VM
      ================================ */
 
   barsVm() {
@@ -240,9 +232,6 @@ export class WorkOrderTimelineComponent {
     const x = evt.clientX - rect.left + this.scrollEl.nativeElement.scrollLeft;
     const dayIndex = Math.floor(x / this.pixelsPerDay);
 
-    const startIso = this.dayIndexToIso(dayIndex);
-    const endIso = this.dayIndexToIso(dayIndex + 6);
-
     this.panelMode = 'create';
     this.panelEditingId = null;
     this.panelExternalError = null;
@@ -250,8 +239,8 @@ export class WorkOrderTimelineComponent {
       workCenterId,
       name: '',
       status: 'open',
-      startDate: startIso,
-      endDate: endIso,
+      startDate: this.dayIndexToIso(dayIndex),
+      endDate: this.dayIndexToIso(dayIndex + 6),
     };
     this.panelOpen = true;
   }
@@ -272,6 +261,7 @@ export class WorkOrderTimelineComponent {
   deleteBar(id: string) {
     this.closeMenu();
     this.workOrders = this.workOrders.filter(w => w.id !== id);
+    this.saveWorkOrders();
   }
 
   /* ================================
@@ -297,6 +287,7 @@ export class WorkOrderTimelineComponent {
       this.workOrders = this.workOrders.map(w => (w.id === candidate.id ? candidate : w));
     }
 
+    this.saveWorkOrders();
     this.closePanel();
   }
 
@@ -347,7 +338,29 @@ export class WorkOrderTimelineComponent {
   }
 
   /* ================================
-     Columns builders
+     Persistence
+     ================================ */
+
+  private loadWorkOrders(): WorkOrder[] | null {
+    try {
+      const raw = localStorage.getItem(this.LS_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return null;
+      return parsed as WorkOrder[];
+    } catch {
+      return null;
+    }
+  }
+
+  private saveWorkOrders() {
+    try {
+      localStorage.setItem(this.LS_KEY, JSON.stringify(this.workOrders));
+    } catch {}
+  }
+
+  /* ================================
+     Columns
      ================================ */
 
   private buildDayColumns(total: number): TimelineColumn[] {
@@ -387,7 +400,6 @@ export class WorkOrderTimelineComponent {
         days,
       });
     }
-
     return cols;
   }
 

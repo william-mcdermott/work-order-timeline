@@ -6,46 +6,24 @@
       <div class="label">Timescale:</div>
 
       <div class="seg">
-        <button
-          type="button"
-          class="seg__btn"
-          [class.is-active]="timescale === 'day'"
-          (click)="setTimescale('day')"
-        >
-          Day
-        </button>
-        <button
-          type="button"
-          class="seg__btn"
-          [class.is-active]="timescale === 'week'"
-          (click)="setTimescale('week')"
-        >
-          Week
-        </button>
-        <button
-          type="button"
-          class="seg__btn"
-          [class.is-active]="timescale === 'month'"
-          (click)="setTimescale('month')"
-        >
-          Month
-        </button>
+        <button class="seg__btn" [class.is-active]="timescale==='day'" (click)="setTimescale('day')">Day</button>
+        <button class="seg__btn" [class.is-active]="timescale==='week'" (click)="setTimescale('week')">Week</button>
+        <button class="seg__btn" [class.is-active]="timescale==='month'" (click)="setTimescale('month')">Month</button>
       </div>
+
+      <button class="today-btn" type="button" (click)="goToToday($event)">Today</button>
     </div>
   </div>
 
   <div class="timeline">
     <div class="timeline__grid">
-      <!-- LEFT -->
       <div class="timeline__left">
         <div class="header__cell">Work Center</div>
-
         <div class="row-left" *ngFor="let wc of workCenters; trackBy: trackById">
           {{ wc.name }}
         </div>
       </div>
 
-      <!-- RIGHT -->
       <div class="timeline__right">
         <div class="scroll" #scrollEl>
           <div class="scroll__content" [style.width.px]="totalWidthPx()">
@@ -70,7 +48,6 @@
     </div>
   </div>
 
-  <!-- Extracted panel -->
   <app-work-order-panel
     *ngIf="panelOpen && panelInitial"
     [mode]="panelMode"
