@@ -1,22 +1,29 @@
-<div class="grid-body">
-  <div class="row" *ngFor="let wc of workCenters; trackBy: trackByWc">
-    <div class="row-track" (click)="onRowClick(wc.id, $event)">
-      <div
-        class="cell"
-        *ngFor="let c of columns; trackBy: trackByCol"
-        [style.width.px]="c.widthPx"
-      ></div>
-
+<div class="grid">
+  <div
+    class="row"
+    *ngFor="let wc of workCenters; trackBy: trackByWc; let i = index"
+    [class.is-even]="i % 2 === 1"
+  >
+    <div
+      class="track"
+      (click)="onRowClick(wc.id, $event)"
+      [style.--colWidthPx.px]="pixelsPerDay"
+    >
+      <!-- Work order bars for this work center -->
       <app-work-order-bar
-        *ngFor="let bar of barsFor(wc.id); trackBy: trackByBar"
-        [bar]="bar"
-        [leftPx]="barLeftPx(bar)"
-        [widthPx]="barWidthPx(bar)"
-        [menuOpen]="openMenuBarId === bar.id"
-        (toggleMenu)="toggleMenu.emit($event)"
+        *ngFor="let b of barsFor(wc.id); trackBy: trackById"
+        [bar]="b"
+        [pixelsPerDay]="pixelsPerDay"
+        [menuOpen]="openMenuBarId === b.id"
+        (toggleMenu)="onToggleMenu(b.id, $event)"
         (edit)="edit.emit($event)"
         (delete)="delete.emit($event)"
       ></app-work-order-bar>
+
+      <!-- Empty-state hint (optional / can remove) -->
+      <div class="hint" *ngIf="barsFor(wc.id).length === 0">
+        Click to add dates
+      </div>
     </div>
   </div>
 </div>

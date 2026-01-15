@@ -1,21 +1,19 @@
 .bar {
   position: absolute;
-  top: 10px;
-  height: 36px;
+  top: 11px;
+  height: 34px;
   border-radius: 12px;
+
   display: grid;
   grid-template-columns: 1fr auto 28px;
   align-items: center;
   gap: 10px;
-  padding: 0 10px 0 12px;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  overflow: hidden;
-  background: #fff;
 
-  &:hover {
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
-  }
+  padding: 0 10px 0 12px;
+
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  overflow: hidden;
 }
 
 .bar__label {
@@ -28,53 +26,50 @@
 }
 
 .badge {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  padding: 6px 10px;
+  padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid transparent;
   white-space: nowrap;
 }
 
-/* ===== Status styling ===== */
-
+/* Softer tints like the Sketch */
 .bar--open {
-  background: rgba(37, 99, 235, 0.12);
+  background: rgba(37, 99, 235, 0.10);
 }
 .badge--open {
-  background: rgba(37, 99, 235, 0.18);
-  border-color: rgba(37, 99, 235, 0.25);
+  background: rgba(37, 99, 235, 0.16);
+  border-color: rgba(37, 99, 235, 0.22);
   color: #1d4ed8;
 }
 
 .bar--in-progress {
-  background: rgba(99, 102, 241, 0.12);
+  background: rgba(99, 102, 241, 0.10);
 }
 .badge--in-progress {
-  background: rgba(99, 102, 241, 0.18);
-  border-color: rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.16);
+  border-color: rgba(99, 102, 241, 0.22);
   color: #4338ca;
 }
 
 .bar--complete {
-  background: rgba(22, 163, 74, 0.12);
+  background: rgba(22, 163, 74, 0.10);
 }
 .badge--complete {
-  background: rgba(22, 163, 74, 0.18);
-  border-color: rgba(22, 163, 74, 0.25);
+  background: rgba(22, 163, 74, 0.16);
+  border-color: rgba(22, 163, 74, 0.22);
   color: #15803d;
 }
 
 .bar--blocked {
-  background: rgba(245, 158, 11, 0.16);
+  background: rgba(245, 158, 11, 0.12);
 }
 .badge--blocked {
-  background: rgba(245, 158, 11, 0.22);
-  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.24);
   color: #b45309;
 }
-
-/* ===== Actions ===== */
 
 .kebab {
   width: 28px;
@@ -91,8 +86,6 @@
     background: rgba(15, 23, 42, 0.06);
   }
 }
-
-/* ===== Menu ===== */
 
 .menu {
   position: absolute;

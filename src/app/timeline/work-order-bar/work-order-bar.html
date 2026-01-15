@@ -1,5 +1,11 @@
-<div class="bar" [class]="'bar bar--' + bar.status" [style.left.px]="leftPx" [style.width.px]="widthPx">
+<div
+  class="bar"
+  [class]="'bar bar--' + bar.status"
+  [style.left.px]="leftPx"
+  [style.width.px]="widthPx"
+>
   <div class="bar__label">{{ bar.name }}</div>
+
   <div class="badge" [class]="'badge badge--' + bar.status">
     {{ statusLabel(bar.status) }}
   </div>

@@ -5,8 +5,11 @@ export type WorkOrderStatus = 'open' | 'in-progress' | 'complete' | 'blocked';
 
 export type WorkOrderBarVm = {
   id: string;
+  workCenterId: string;
   name: string;
   status: WorkOrderStatus;
+  startDay: number;
+  endDay: number;
 };
 
 @Component({
@@ -19,39 +22,41 @@ export type WorkOrderBarVm = {
 })
 export class WorkOrderBarComponent {
   @Input({ required: true }) bar!: WorkOrderBarVm;
-  @Input({ required: true }) leftPx!: number;
-  @Input({ required: true }) widthPx!: number;
+  @Input({ required: true }) pixelsPerDay!: number;
 
-  /** Whether the 3-dot menu is open for this bar */
+  /** Controlled by parent so only one menu opens at a time */
   @Input() menuOpen = false;
 
-  @Output() toggleMenu = new EventEmitter<{ id: string; event: MouseEvent }>();
+  @Output() toggleMenu = new EventEmitter<MouseEvent>();
   @Output() edit = new EventEmitter<string>();
   @Output() delete = new EventEmitter<string>();
 
-  statusLabel(s: 'open' | 'in-progress' | 'complete' | 'blocked'): string {
-    if (s === 'open') return 'Open';
-    if (s === 'in-progress') return 'In Progress';
-    if (s === 'complete') return 'Complete';
-    return 'Blocked';
+  get leftPx(): number {
+    return this.bar.startDay * this.pixelsPerDay;
   }
 
-  stop(evt: MouseEvent) {
-    evt.stopPropagation();
+  get widthPx(): number {
+    const days = Math.max(1, this.bar.endDay - this.bar.startDay + 1);
+    return days * this.pixelsPerDay;
   }
 
   onToggleMenu(evt: MouseEvent) {
     evt.stopPropagation();
-    this.toggleMenu.emit({ id: this.bar.id, event: evt });
+    this.toggleMenu.emit(evt);
   }
 
-  onEdit(evt: MouseEvent) {
-    evt.stopPropagation();
-    this.edit.emit(this.bar.id);
-  }
-
-  onDelete(evt: MouseEvent) {
-    evt.stopPropagation();
-    this.delete.emit(this.bar.id);
+  statusLabel(s: WorkOrderStatus): string {
+    switch (s) {
+      case 'open':
+        return 'Open';
+      case 'in-progress':
+        return 'In progress';
+      case 'complete':
+        return 'Complete';
+      case 'blocked':
+        return 'Blocked';
+      default:
+        return s;
+    }
   }
 }
