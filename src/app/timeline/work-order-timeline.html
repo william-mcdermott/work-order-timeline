@@ -1,0 +1,86 @@
+<div class="page">
+  <div class="topbar">
+    <div class="topbar__title">{{ title }}</div>
+
+    <!-- static for now -->
+    <div class="topbar__controls">
+      <div class="label">Timescale:</div>
+      <button class="pill" type="button">Day ▼</button>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <!-- HEADER -->
+    <div class="timeline__header">
+      <div class="header__left">
+        <div class="header__cell">Work Center</div>
+      </div>
+
+      <div class="header__right">
+        <div class="scroll">
+          <div
+            class="grid-header"
+            [style.width.px]="columns.length * colWidth"
+          >
+            <div
+              class="col"
+              *ngFor="let c of columns; trackBy: trackByKey"
+              [style.width.px]="colWidth"
+            >
+              {{ c.label }}
+            </div>
+
+            <!-- today line -->
+            <div
+              class="today-line"
+              [style.left.px]="(todayIndex - 1) * colWidth + colWidth / 2"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="timeline__body">
+      <div class="body__left">
+        <div
+          class="row-left"
+          *ngFor="let wc of workCenters; trackBy: trackById"
+        >
+          {{ wc.name }}
+        </div>
+      </div>
+
+      <div class="body__right">
+        <div class="scroll">
+          <div
+            class="grid-body"
+            [style.width.px]="columns.length * colWidth"
+          >
+            <div
+              class="row"
+              *ngFor="let wc of workCenters; trackBy: trackById"
+            >
+              <!-- row hover highlight handled via CSS -->
+              <div class="row-track">
+                <div
+                  class="cell"
+                  *ngFor="let c of columns; trackBy: trackByKey"
+                  [style.width.px]="colWidth"
+                ></div>
+
+                <!-- later: work order bars go here (absolute positioned) -->
+              </div>
+            </div>
+
+            <!-- today line duplicated in body so it spans rows -->
+            <div
+              class="today-line"
+              [style.left.px]="(todayIndex - 1) * colWidth + colWidth / 2"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

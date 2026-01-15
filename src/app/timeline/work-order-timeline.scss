@@ -1,0 +1,147 @@
+.page {
+  padding: 18px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.topbar__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.topbar__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.pill {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid #d8e0ee;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.timeline {
+  border: 1px solid #e8edf5;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* Header row: left fixed + right scroll */
+.timeline__header {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  border-bottom: 1px solid #e8edf5;
+}
+
+.header__left {
+  padding: 12px 14px;
+  background: #f8fafc;
+}
+
+.header__cell {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.header__right {
+  background: #f8fafc;
+}
+
+.scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.grid-header {
+  position: relative;
+  display: flex;
+  height: 44px;
+}
+
+.col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #edf2f7;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+/* Body: left fixed list + right scroll grid */
+.timeline__body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 320px;
+}
+
+.body__left {
+  background: #fff;
+}
+
+.row-left {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.body__right {
+  background: #fff;
+}
+
+.grid-body {
+  position: relative;
+}
+
+.row {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.row-track {
+  position: relative;
+  height: 56px;
+  display: flex;
+}
+
+.cell {
+  border-left: 1px solid #edf2f7;
+}
+
+/* Row hover highlight (right side) */
+.row:hover .row-track {
+  background: #f8fafc;
+}
+
+/* Today indicator */
+.today-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #2563eb;
+  opacity: 0.65;
+  pointer-events: none;
+}
