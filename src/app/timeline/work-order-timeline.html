@@ -14,69 +14,60 @@
   </div>
 
   <div class="timeline">
-    <!-- HEADER -->
-    <div class="timeline__header">
-      <div class="header__left">
+    <!-- One 2-column grid: left fixed, right scrolls -->
+    <div class="timeline__grid">
+      <!-- LEFT (fixed) -->
+      <div class="timeline__left">
         <div class="header__cell">Work Center</div>
-      </div>
 
-      <div class="header__right">
-        <div class="scroll" #scrollEl>
-          <div class="grid-header" [style.width.px]="totalWidthPx()">
-            <div
-              class="col"
-              *ngFor="let c of columns; trackBy: trackByCol"
-              [style.width.px]="colWidthPx(c)"
-            >
-              {{ c.label }}
-            </div>
-
-            <div class="today-line" [style.left.px]="todayLineLeftPx()"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BODY -->
-    <div class="timeline__body">
-      <div class="body__left">
         <div class="row-left" *ngFor="let wc of workCenters; trackBy: trackById">
           {{ wc.name }}
         </div>
       </div>
 
-      <div class="body__right">
-        <!-- reuse same scroll container: simplest is to wrap both header+body with one scroll later
-             @upgrade: sync header/body scrollLeft; for now keep single scroll by using same element for both.
-        -->
-        <div class="scroll" [scrollLeft]="scrollEl?.nativeElement.scrollLeft">
-          <div class="grid-body" [style.width.px]="totalWidthPx()">
-            <div class="row" *ngFor="let wc of workCenters; trackBy: trackById">
-              <div class="row-track">
-                <div
-                  class="cell"
-                  *ngFor="let c of columns; trackBy: trackByCol"
-                  [style.width.px]="colWidthPx(c)"
-                ></div>
+      <!-- RIGHT (single shared horizontal scroll) -->
+      <div class="timeline__right">
+        <div class="scroll" #scrollEl>
+          <div class="scroll__content" [style.width.px]="totalWidthPx()">
+            <!-- Header columns -->
+            <div class="grid-header">
+              <div
+                class="col"
+                *ngFor="let c of columns; trackBy: trackByCol"
+                [style.width.px]="colWidthPx(c)"
+              >
+                {{ c.label }}
+              </div>
+            </div>
 
-                <!-- HARD-CODED BARS (scaled by pixelsPerDay) -->
-                <div
-                  class="work-bar"
-                  *ngFor="let bar of barsFor(wc.id); trackBy: trackByBar"
-                  [style.left.px]="barLeftPx(bar)"
-                  [style.width.px]="barWidthPx(bar)"
-                >
-                  <div class="work-bar__content">
-                    <div class="work-bar__name" title="{{ bar.name }}">{{ bar.name }}</div>
-                    <div class="status-pill" [attr.data-status]="bar.status">
-                      {{ bar.status }}
+            <!-- Body rows -->
+            <div class="grid-body">
+              <div class="row" *ngFor="let wc of workCenters; trackBy: trackById">
+                <div class="row-track">
+                  <div
+                    class="cell"
+                    *ngFor="let c of columns; trackBy: trackByCol"
+                    [style.width.px]="colWidthPx(c)"
+                  ></div>
+
+                  <!-- Bars -->
+                  <div
+                    class="work-bar"
+                    *ngFor="let bar of barsFor(wc.id); trackBy: trackByBar"
+                    [style.left.px]="barLeftPx(bar)"
+                    [style.width.px]="barWidthPx(bar)"
+                  >
+                    <div class="work-bar__content">
+                      <div class="work-bar__name" title="{{ bar.name }}">{{ bar.name }}</div>
+                      <div class="status-pill" [attr.data-status]="bar.status">{{ bar.status }}</div>
+                      <button type="button" class="dots" aria-label="Actions">⋯</button>
                     </div>
-                    <button type="button" class="dots" aria-label="Actions">⋯</button>
                   </div>
                 </div>
               </div>
             </div>
 
+            <!-- One today line for header + body -->
             <div class="today-line" [style.left.px]="todayLineLeftPx()"></div>
           </div>
         </div>

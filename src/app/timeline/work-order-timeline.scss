@@ -1,5 +1,10 @@
+/* ============================================================
+   PAGE + TOP BAR
+   ============================================================ */
+
 .page {
   padding: 18px;
+  font-family: 'Circular-Std', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .topbar {
@@ -27,43 +32,92 @@
   color: #64748b;
 }
 
-.pill {
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
+/* ============================================================
+   SEGMENTED CONTROL (DAY / WEEK / MONTH)
+   ============================================================ */
+
+.seg {
+  display: inline-flex;
   border: 1px solid #d8e0ee;
-  background: #fff;
-  font-weight: 600;
-  cursor: pointer;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #ffffff;
 }
+
+.seg__btn {
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+
+  &:hover {
+    background: #f1f5f9;
+  }
+
+  &.is-active {
+    background: #0f172a;
+    color: #ffffff;
+  }
+}
+
+/* ============================================================
+   TIMELINE LAYOUT
+   ============================================================ */
 
 .timeline {
   border: 1px solid #e8edf5;
   border-radius: 14px;
   overflow: hidden;
-  background: #fff;
+  background: #ffffff;
 }
 
-/* Header row: left fixed + right scroll */
-.timeline__header {
+.timeline__grid {
   display: grid;
   grid-template-columns: 280px 1fr;
-  border-bottom: 1px solid #e8edf5;
 }
 
-.header__left {
-  padding: 12px 14px;
-  background: #f8fafc;
+/* ============================================================
+   LEFT (FIXED) COLUMN
+   ============================================================ */
+
+.timeline__left {
+  background: #ffffff;
+  border-right: 1px solid #e8edf5;
 }
 
 .header__cell {
+  height: 44px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border-bottom: 1px solid #e8edf5;
   font-size: 12px;
   font-weight: 700;
   color: #475569;
 }
 
-.header__right {
-  background: #f8fafc;
+.row-left {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* ============================================================
+   RIGHT (SCROLLING) AREA
+   ============================================================ */
+
+.timeline__right {
+  background: #ffffff;
 }
 
 .scroll {
@@ -71,10 +125,19 @@
   overflow-y: hidden;
 }
 
+.scroll__content {
+  position: relative; /* for today line */
+}
+
+/* ============================================================
+   HEADER GRID
+   ============================================================ */
+
 .grid-header {
-  position: relative;
   display: flex;
   height: 44px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e8edf5;
 }
 
 .col {
@@ -85,35 +148,15 @@
   font-size: 12px;
   font-weight: 700;
   color: #475569;
+  white-space: nowrap;
 }
 
-/* Body: left fixed list + right scroll grid */
-.timeline__body {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  min-height: 320px;
-}
-
-.body__left {
-  background: #fff;
-}
-
-.row-left {
-  height: 56px;
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  border-bottom: 1px solid #f1f5f9;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.body__right {
-  background: #fff;
-}
+/* ============================================================
+   BODY GRID
+   ============================================================ */
 
 .grid-body {
-  position: relative;
+  background: #ffffff;
 }
 
 .row {
@@ -130,12 +173,15 @@
   border-left: 1px solid #edf2f7;
 }
 
-/* Row hover highlight (right side) */
+/* Hover highlight on right side only */
 .row:hover .row-track {
   background: #f8fafc;
 }
 
-/* Today indicator */
+/* ============================================================
+   TODAY INDICATOR
+   ============================================================ */
+
 .today-line {
   position: absolute;
   top: 0;
@@ -145,7 +191,11 @@
   opacity: 0.65;
   pointer-events: none;
 }
-/* Work order bars */
+
+/* ============================================================
+   WORK ORDER BARS
+   ============================================================ */
+
 .work-bar {
   position: absolute;
   top: 50%;
@@ -176,6 +226,10 @@
   text-overflow: ellipsis;
 }
 
+/* ============================================================
+   STATUS PILLS
+   ============================================================ */
+
 .status-pill {
   height: 22px;
   padding: 0 10px;
@@ -188,7 +242,6 @@
   border: 1px solid transparent;
 }
 
-/* Status colors */
 .status-pill[data-status='open'] {
   background: rgba(37, 99, 235, 0.12);
   color: #1d4ed8;
@@ -213,6 +266,10 @@
   border-color: rgba(245, 158, 11, 0.26);
 }
 
+/* ============================================================
+   BAR ACTION BUTTON
+   ============================================================ */
+
 .dots {
   width: 28px;
   height: 28px;
@@ -226,29 +283,5 @@
 
   &:hover {
     background: rgba(15, 23, 42, 0.06);
-  }
-}
-
-.seg {
-  display: inline-flex;
-  border: 1px solid #d8e0ee;
-  border-radius: 999px;
-  overflow: hidden;
-  background: #fff;
-}
-
-.seg__btn {
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 13px;
-  color: #475569;
-
-  &.is-active {
-    background: #0f172a;
-    color: #fff;
   }
 }
