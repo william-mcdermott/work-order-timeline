@@ -24,7 +24,7 @@
         </div>
       </div>
 
-      <!-- RIGHT (shared scroll for header + body) -->
+      <!-- RIGHT -->
       <div class="timeline__right">
         <div class="scroll" #scrollEl>
           <div class="scroll__content" [style.width.px]="totalWidthPx()">
@@ -49,37 +49,16 @@
                     [style.width.px]="colWidthPx(c)"
                   ></div>
 
-                  <div
-                    class="work-bar"
+                  <app-work-order-bar
                     *ngFor="let bar of barsFor(wc.id); trackBy: trackByBar"
-                    [style.left.px]="barLeftPx(bar)"
-                    [style.width.px]="barWidthPx(bar)"
-                    (click)="stopRowClick($event)"
-                  >
-                    <div class="work-bar__content">
-                      <div class="work-bar__name" title="{{ bar.name }}">{{ bar.name }}</div>
-
-                      <div class="status-pill" [attr.data-status]="bar.status">
-                        {{ bar.status }}
-                      </div>
-
-                      <button
-                        type="button"
-                        class="dots"
-                        aria-label="Actions"
-                        (click)="toggleMenu(bar.id, $event)"
-                      >
-                        ⋯
-                      </button>
-
-                      <div class="menu" *ngIf="openMenuBarId === bar.id" (click)="stopRowClick($event)">
-                        <button type="button" class="menu__item" (click)="openEdit(bar.id)">Edit</button>
-                        <button type="button" class="menu__item menu__item--danger" (click)="deleteBar(bar.id)">
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                    [bar]="bar"
+                    [leftPx]="barLeftPx(bar)"
+                    [widthPx]="barWidthPx(bar)"
+                    [menuOpen]="openMenuBarId === bar.id"
+                    (toggleMenu)="toggleMenu($event.id, $event.event)"
+                    (edit)="openEdit($event)"
+                    (delete)="deleteBar($event)"
+                  ></app-work-order-bar>
                 </div>
               </div>
             </div>

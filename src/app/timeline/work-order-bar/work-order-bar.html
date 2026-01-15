@@ -1,0 +1,25 @@
+<div
+  class="work-bar"
+  [style.left.px]="leftPx"
+  [style.width.px]="widthPx"
+  (click)="stop($event)"
+>
+  <div class="work-bar__content">
+    <div class="work-bar__name" [title]="bar.name">{{ bar.name }}</div>
+
+    <div class="status-pill" [attr.data-status]="bar.status">
+      {{ bar.status }}
+    </div>
+
+    <button type="button" class="dots" aria-label="Actions" (click)="onToggleMenu($event)">
+      ⋯
+    </button>
+
+    <div class="menu" *ngIf="menuOpen" (click)="stop($event)">
+      <button type="button" class="menu__item" (click)="onEdit($event)">Edit</button>
+      <button type="button" class="menu__item menu__item--danger" (click)="onDelete($event)">
+        Delete
+      </button>
+    </div>
+  </div>
+</div>

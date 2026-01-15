@@ -1,15 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { WorkOrderBarComponent } from './work-order-bar/work-order-bar';
 
 type WorkCenter = { id: string; name: string };
 type Timescale = 'day' | 'week' | 'month';
+
 type WorkOrderStatus = 'open' | 'in-progress' | 'complete' | 'blocked';
 
 type TimelineColumn = {
   key: string;
   label: string;
-  days: number; // for variable month widths
+  days: number;
 };
 
 type WorkOrderBar = {
@@ -17,8 +19,8 @@ type WorkOrderBar = {
   workCenterId: string;
   name: string;
   status: WorkOrderStatus;
-  startDay: number; // 0-based
-  endDay: number;   // inclusive
+  startDay: number;
+  endDay: number; // inclusive
 };
 
 type PanelMode = 'create' | 'edit';
@@ -26,7 +28,7 @@ type PanelMode = 'create' | 'edit';
 @Component({
   selector: 'app-work-order-timeline',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WorkOrderBarComponent],
   templateUrl: './work-order-timeline.html',
   styleUrls: ['./work-order-timeline.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,30 +48,28 @@ export class WorkOrderTimelineComponent {
 
   timescale: Timescale = 'day';
 
-  // “today” position within the demo range
   todayDayIndex = 14;
-
   pixelsPerDay = 56;
+
   columns: TimelineColumn[] = [];
   totalDays = 29;
 
-  // Hardcoded bars in day-units
   bars: WorkOrderBar[] = [
-    { id: 'wo-1', workCenterId: 'wc-1', name: 'Extrude Batch 1042', status: 'complete',    startDay: 2,  endDay: 6 },
-    { id: 'wo-2', workCenterId: 'wc-1', name: 'Extrude Batch 1043', status: 'open',        startDay: 9,  endDay: 11 },
+    { id: 'wo-1', workCenterId: 'wc-1', name: 'Extrude Batch 1042', status: 'complete', startDay: 2, endDay: 6 },
+    { id: 'wo-2', workCenterId: 'wc-1', name: 'Extrude Batch 1043', status: 'open', startDay: 9, endDay: 11 },
 
-    { id: 'wo-3', workCenterId: 'wc-2', name: 'Mill Housing A',     status: 'in-progress', startDay: 8,  endDay: 16 },
+    { id: 'wo-3', workCenterId: 'wc-2', name: 'Mill Housing A', status: 'in-progress', startDay: 8, endDay: 16 },
 
-    { id: 'wo-4', workCenterId: 'wc-3', name: 'Assemble Unit K',    status: 'open',        startDay: 5,  endDay: 7 },
-    { id: 'wo-5', workCenterId: 'wc-3', name: 'Assemble Unit L',    status: 'blocked',     startDay: 12, endDay: 15 },
+    { id: 'wo-4', workCenterId: 'wc-3', name: 'Assemble Unit K', status: 'open', startDay: 5, endDay: 7 },
+    { id: 'wo-5', workCenterId: 'wc-3', name: 'Assemble Unit L', status: 'blocked', startDay: 12, endDay: 15 },
 
-    { id: 'wo-6', workCenterId: 'wc-4', name: 'QC Audit 7A',        status: 'in-progress', startDay: 0,  endDay: 13 },
+    { id: 'wo-6', workCenterId: 'wc-4', name: 'QC Audit 7A', status: 'in-progress', startDay: 0, endDay: 13 },
   ];
 
-  // 3-dot menu state
+  // menu state
   openMenuBarId: string | null = null;
 
-  // Panel state
+  // panel state
   panelOpen = false;
   panelMode: PanelMode = 'create';
   panelWorkCenterId: string | null = null;
@@ -82,12 +82,14 @@ export class WorkOrderTimelineComponent {
 
   constructor() {
     this.applyTimescale(this.timescale);
+    queueMicrotask(() => this.centerScrollOnToday());
   }
 
-  // -------------------- Zoom --------------------
+  // ---------------- Zoom ----------------
 
   setTimescale(ts: Timescale) {
     if (this.timescale === ts) return;
+
     this.timescale = ts;
     this.applyTimescale(ts);
 
@@ -104,8 +106,8 @@ export class WorkOrderTimelineComponent {
     }
 
     if (ts === 'week') {
-      this.pixelsPerDay = 20;  // 140px/week
-      this.totalDays = 112;    // 16 weeks
+      this.pixelsPerDay = 20; // 140px/week
+      this.totalDays = 112;
       this.todayDayIndex = 56;
       this.columns = this.buildWeekColumns(this.totalDays);
       return;
@@ -137,7 +139,7 @@ export class WorkOrderTimelineComponent {
     el.scrollLeft = Math.max(0, target);
   }
 
-  // -------------------- Bars rendering --------------------
+  // ---------------- Bars ----------------
 
   barsFor(workCenterId: string): WorkOrderBar[] {
     return this.bars.filter(b => b.workCenterId === workCenterId);
@@ -152,7 +154,7 @@ export class WorkOrderTimelineComponent {
     return Math.max(1, daysInclusive * this.pixelsPerDay - 16);
   }
 
-  // -------------------- Click-to-create --------------------
+  // ---------------- Click-to-create ----------------
 
   openCreateFromClick(workCenterId: string, evt: MouseEvent) {
     this.closeMenu();
@@ -261,7 +263,7 @@ export class WorkOrderTimelineComponent {
     this.panelWorkCenterId = null;
   }
 
-  // -------------------- Menu --------------------
+  // ---------------- Menu handlers (from WorkOrderBarComponent outputs) ----------------
 
   toggleMenu(barId: string, evt: MouseEvent) {
     evt.stopPropagation();
@@ -280,7 +282,7 @@ export class WorkOrderTimelineComponent {
     evt.stopPropagation();
   }
 
-  // -------------------- Overlap --------------------
+  // ---------------- Overlap ----------------
 
   hasOverlap(candidate: WorkOrderBar, excludeId?: string): boolean {
     return this.bars
@@ -297,7 +299,7 @@ export class WorkOrderTimelineComponent {
     return Math.max(0, Math.min(this.totalDays - 1, d));
   }
 
-  // -------------------- Columns (static labels for now) --------------------
+  // ---------------- Columns (static labels for now) ----------------
 
   private buildDayColumns(totalDays: number): TimelineColumn[] {
     return Array.from({ length: totalDays }).map((_, i) => ({
