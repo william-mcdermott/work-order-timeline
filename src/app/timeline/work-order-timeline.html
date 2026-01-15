@@ -2,10 +2,14 @@
   <div class="topbar">
     <div class="topbar__title">{{ title }}</div>
 
-    <!-- static for now -->
     <div class="topbar__controls">
       <div class="label">Timescale:</div>
-      <button class="pill" type="button">Day ▼</button>
+
+      <div class="seg">
+        <button type="button" class="seg__btn" [class.is-active]="timescale==='day'" (click)="setTimescale('day')">Day</button>
+        <button type="button" class="seg__btn" [class.is-active]="timescale==='week'" (click)="setTimescale('week')">Week</button>
+        <button type="button" class="seg__btn" [class.is-active]="timescale==='month'" (click)="setTimescale('month')">Month</button>
+      </div>
     </div>
   </div>
 
@@ -17,21 +21,17 @@
       </div>
 
       <div class="header__right">
-        <div class="scroll">
-          <div class="grid-header" [style.width.px]="columns.length * colWidth">
+        <div class="scroll" #scrollEl>
+          <div class="grid-header" [style.width.px]="totalWidthPx()">
             <div
               class="col"
-              *ngFor="let c of columns; trackBy: trackByKey"
-              [style.width.px]="colWidth"
+              *ngFor="let c of columns; trackBy: trackByCol"
+              [style.width.px]="colWidthPx(c)"
             >
               {{ c.label }}
             </div>
 
-            <!-- today line -->
-            <div
-              class="today-line"
-              [style.left.px]="(todayIndex - 1) * colWidth + colWidth / 2"
-            ></div>
+            <div class="today-line" [style.left.px]="todayLineLeftPx()"></div>
           </div>
         </div>
       </div>
@@ -46,40 +46,38 @@
       </div>
 
       <div class="body__right">
-        <div class="scroll">
-          <div class="grid-body" [style.width.px]="columns.length * colWidth">
+        <!-- reuse same scroll container: simplest is to wrap both header+body with one scroll later
+             @upgrade: sync header/body scrollLeft; for now keep single scroll by using same element for both.
+        -->
+        <div class="scroll" [scrollLeft]="scrollEl?.nativeElement.scrollLeft">
+          <div class="grid-body" [style.width.px]="totalWidthPx()">
             <div class="row" *ngFor="let wc of workCenters; trackBy: trackById">
               <div class="row-track">
                 <div
                   class="cell"
-                  *ngFor="let c of columns; trackBy: trackByKey"
-                  [style.width.px]="colWidth"
+                  *ngFor="let c of columns; trackBy: trackByCol"
+                  [style.width.px]="colWidthPx(c)"
                 ></div>
 
-                <!-- HARD-CODED BARS -->
+                <!-- HARD-CODED BARS (scaled by pixelsPerDay) -->
                 <div
                   class="work-bar"
                   *ngFor="let bar of barsFor(wc.id); trackBy: trackByBar"
-                  [style.left.px]="bar.leftPx"
-                  [style.width.px]="bar.widthPx"
-                  [attr.data-status]="bar.status"
+                  [style.left.px]="barLeftPx(bar)"
+                  [style.width.px]="barWidthPx(bar)"
                 >
                   <div class="work-bar__content">
                     <div class="work-bar__name" title="{{ bar.name }}">{{ bar.name }}</div>
                     <div class="status-pill" [attr.data-status]="bar.status">
                       {{ bar.status }}
                     </div>
-
                     <button type="button" class="dots" aria-label="Actions">⋯</button>
                   </div>
                 </div>
               </div>
             </div>
-            <!-- today line duplicated in body so it spans rows -->
-            <div
-              class="today-line"
-              [style.left.px]="(todayIndex - 1) * colWidth + colWidth / 2"
-            ></div>
+
+            <div class="today-line" [style.left.px]="todayLineLeftPx()"></div>
           </div>
         </div>
       </div>

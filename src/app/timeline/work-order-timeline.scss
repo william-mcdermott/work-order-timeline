@@ -228,3 +228,27 @@
     background: rgba(15, 23, 42, 0.06);
   }
 }
+
+.seg {
+  display: inline-flex;
+  border: 1px solid #d8e0ee;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.seg__btn {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  color: #475569;
+
+  &.is-active {
+    background: #0f172a;
+    color: #fff;
+  }
+}
