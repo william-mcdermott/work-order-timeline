@@ -18,10 +18,7 @@
 
       <div class="header__right">
         <div class="scroll">
-          <div
-            class="grid-header"
-            [style.width.px]="columns.length * colWidth"
-          >
+          <div class="grid-header" [style.width.px]="columns.length * colWidth">
             <div
               class="col"
               *ngFor="let c of columns; trackBy: trackByKey"
@@ -43,25 +40,15 @@
     <!-- BODY -->
     <div class="timeline__body">
       <div class="body__left">
-        <div
-          class="row-left"
-          *ngFor="let wc of workCenters; trackBy: trackById"
-        >
+        <div class="row-left" *ngFor="let wc of workCenters; trackBy: trackById">
           {{ wc.name }}
         </div>
       </div>
 
       <div class="body__right">
         <div class="scroll">
-          <div
-            class="grid-body"
-            [style.width.px]="columns.length * colWidth"
-          >
-            <div
-              class="row"
-              *ngFor="let wc of workCenters; trackBy: trackById"
-            >
-              <!-- row hover highlight handled via CSS -->
+          <div class="grid-body" [style.width.px]="columns.length * colWidth">
+            <div class="row" *ngFor="let wc of workCenters; trackBy: trackById">
               <div class="row-track">
                 <div
                   class="cell"
@@ -69,10 +56,25 @@
                   [style.width.px]="colWidth"
                 ></div>
 
-                <!-- later: work order bars go here (absolute positioned) -->
+                <!-- HARD-CODED BARS -->
+                <div
+                  class="work-bar"
+                  *ngFor="let bar of barsFor(wc.id); trackBy: trackByBar"
+                  [style.left.px]="bar.leftPx"
+                  [style.width.px]="bar.widthPx"
+                  [attr.data-status]="bar.status"
+                >
+                  <div class="work-bar__content">
+                    <div class="work-bar__name" title="{{ bar.name }}">{{ bar.name }}</div>
+                    <div class="status-pill" [attr.data-status]="bar.status">
+                      {{ bar.status }}
+                    </div>
+
+                    <button type="button" class="dots" aria-label="Actions">⋯</button>
+                  </div>
+                </div>
               </div>
             </div>
-
             <!-- today line duplicated in body so it spans rows -->
             <div
               class="today-line"

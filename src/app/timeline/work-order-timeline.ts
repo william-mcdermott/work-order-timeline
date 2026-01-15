@@ -2,6 +2,17 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 type WorkCenter = { id: string; name: string };
+type WorkOrderStatus = 'open' | 'in-progress' | 'complete' | 'blocked';
+
+type WorkOrderBar = {
+  id: string;
+  workCenterId: string;
+  name: string;
+  status: WorkOrderStatus;
+  // static positioning for now
+  leftPx: number;
+  widthPx: number;
+};
 
 @Component({
   selector: 'app-work-order-timeline',
@@ -22,30 +33,71 @@ export class WorkOrderTimelineComponent {
     { id: 'wc-5', name: 'Packaging Line' },
   ];
 
-  // Hardcoded columns (static)
-  columns = [
-    { key: 'd1', label: 'Mon 1' },
-    { key: 'd2', label: 'Tue 2' },
-    { key: 'd3', label: 'Wed 3' },
-    { key: 'd4', label: 'Thu 4' },
-    { key: 'd5', label: 'Fri 5' },
-    { key: 'd6', label: 'Sat 6' },
-    { key: 'd7', label: 'Sun 7' },
-    { key: 'd8', label: 'Mon 8' },
-    { key: 'd9', label: 'Tue 9' },
-    { key: 'd10', label: 'Wed 10' },
-    { key: 'd11', label: 'Thu 11' },
-    { key: 'd12', label: 'Fri 12' },
-    { key: 'd13', label: 'Sat 13' },
-    { key: 'd14', label: 'Sun 14' },
+  columns = Array.from({ length: 14 }).map((_, i) => ({
+    key: `d${i + 1}`,
+    label: `Day ${i + 1}`,
+  }));
+
+  todayIndex = 9;
+  colWidth = 72;
+
+  // Hardcoded bars (use multiples of colWidth to make it easy to reason about)
+  bars: WorkOrderBar[] = [
+    {
+      id: 'wo-1',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1042',
+      status: 'complete',
+      leftPx: 1 * this.colWidth + 8,
+      widthPx: 4 * this.colWidth - 16,
+    },
+    {
+      id: 'wo-2',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1043',
+      status: 'open',
+      leftPx: 6 * this.colWidth + 8,
+      widthPx: 3 * this.colWidth - 16,
+    },
+    {
+      id: 'wo-3',
+      workCenterId: 'wc-2',
+      name: 'Mill Housing A',
+      status: 'in-progress',
+      leftPx: 5 * this.colWidth + 8,
+      widthPx: 6 * this.colWidth - 16,
+    },
+    {
+      id: 'wo-4',
+      workCenterId: 'wc-3',
+      name: 'Assemble Unit K',
+      status: 'open',
+      leftPx: 2 * this.colWidth + 8,
+      widthPx: 2 * this.colWidth - 16,
+    },
+    {
+      id: 'wo-5',
+      workCenterId: 'wc-3',
+      name: 'Assemble Unit L',
+      status: 'blocked',
+      leftPx: 6 * this.colWidth + 8,
+      widthPx: 3 * this.colWidth - 16,
+    },
+    {
+      id: 'wo-6',
+      workCenterId: 'wc-4',
+      name: 'QC Audit 7A',
+      status: 'in-progress',
+      leftPx: 0 * this.colWidth + 8,
+      widthPx: 9 * this.colWidth - 16,
+    },
   ];
 
-  // Hardcoded "today" (1-based day index here)
-  todayIndex = 9; // vertical line will show over "Tue 9"
-
-  // width of a single column in px (static)
-  colWidth = 72;
+  barsFor(workCenterId: string): WorkOrderBar[] {
+    return this.bars.filter(b => b.workCenterId === workCenterId);
+  }
 
   trackById = (_: number, wc: WorkCenter) => wc.id;
   trackByKey = (_: number, c: { key: string }) => c.key;
+  trackByBar = (_: number, b: WorkOrderBar) => b.id;
 }
