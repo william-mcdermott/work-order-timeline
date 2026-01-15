@@ -1,0 +1,51 @@
+<div class="overlay" (click)="onBackdropClick()">
+  <aside class="panel" (click)="onPanelClick($event)">
+    <header class="panel__header">
+      <div class="panel__title">{{ titleText() }}</div>
+      <button class="icon-btn" type="button" (click)="close.emit()">✕</button>
+    </header>
+
+    <div class="panel__body">
+      <!-- External error (e.g., overlap) -->
+      <div class="alert alert--error" *ngIf="externalError">
+        {{ externalError }}
+      </div>
+
+      <div class="field">
+        <label class="label">Work Order Name</label>
+        <input class="input" type="text" formControlName="name" placeholder="e.g., Assemble Unit K" />
+        <div class="error" *ngIf="showNameRequired()">Name is required.</div>
+      </div>
+
+      <div class="field">
+        <label class="label">Status</label>
+        <select class="input" formControlName="status">
+          <option value="open">Open</option>
+          <option value="in-progress">In Progress</option>
+          <option value="complete">Complete</option>
+          <option value="blocked">Blocked</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="label">Start Day</label>
+        <input class="input" type="number" formControlName="startDay" />
+      </div>
+
+      <div class="field">
+        <label class="label">End Day</label>
+        <input class="input" type="number" formControlName="endDay" />
+        <div class="error" *ngIf="showDateOrderError()">End day must be on/after start day.</div>
+      </div>
+
+      <!-- @upgrade: ngb-datepicker fields + ISO format -->
+    </div>
+
+    <footer class="panel__footer">
+      <button class="btn btn--ghost" type="button" (click)="onCancel($event)">Cancel</button>
+      <button class="btn btn--primary" type="button" (click)="onSubmit($event)">
+        {{ primaryCtaText() }}
+      </button>
+    </footer>
+  </aside>
+</div>

@@ -6,30 +6,9 @@
       <div class="label">Timescale:</div>
 
       <div class="seg">
-        <button
-          type="button"
-          class="seg__btn"
-          [class.is-active]="timescale === 'day'"
-          (click)="setTimescale('day')"
-        >
-          Day
-        </button>
-        <button
-          type="button"
-          class="seg__btn"
-          [class.is-active]="timescale === 'week'"
-          (click)="setTimescale('week')"
-        >
-          Week
-        </button>
-        <button
-          type="button"
-          class="seg__btn"
-          [class.is-active]="timescale === 'month'"
-          (click)="setTimescale('month')"
-        >
-          Month
-        </button>
+        <button type="button" class="seg__btn" [class.is-active]="timescale==='day'" (click)="setTimescale('day')">Day</button>
+        <button type="button" class="seg__btn" [class.is-active]="timescale==='week'" (click)="setTimescale('week')">Week</button>
+        <button type="button" class="seg__btn" [class.is-active]="timescale==='month'" (click)="setTimescale('month')">Month</button>
       </div>
     </div>
   </div>
@@ -49,10 +28,8 @@
       <div class="timeline__right">
         <div class="scroll" #scrollEl>
           <div class="scroll__content" [style.width.px]="totalWidthPx()">
-            <!-- Header -->
             <app-timeline-header [columns]="headerColumns()"></app-timeline-header>
 
-            <!-- Grid -->
             <app-timeline-grid
               [workCenters]="workCenters"
               [columns]="gridColumns()"
@@ -65,7 +42,6 @@
               (delete)="deleteBar($event)"
             ></app-timeline-grid>
 
-            <!-- Today line -->
             <div class="today-line" [style.left.px]="todayLineLeftPx()"></div>
           </div>
         </div>
@@ -73,55 +49,14 @@
     </div>
   </div>
 
-  <!-- PANEL -->
-  <div class="overlay" *ngIf="panelOpen" (click)="closePanel()">
-    <aside class="panel" (click)="stopRowClick($event)">
-      <header class="panel__header">
-        <div class="panel__title">Work Order Details</div>
-        <button class="icon-btn" type="button" (click)="closePanel()">✕</button>
-      </header>
-
-      <div class="panel__body">
-        <div class="field">
-          <label class="label">Work Order Name</label>
-          <input
-            class="input"
-            type="text"
-            [(ngModel)]="panelName"
-            placeholder="e.g., Assemble Unit K"
-          />
-        </div>
-
-        <div class="field">
-          <label class="label">Status</label>
-          <select class="input" [(ngModel)]="panelStatus">
-            <option value="open">Open</option>
-            <option value="in-progress">In Progress</option>
-            <option value="complete">Complete</option>
-            <option value="blocked">Blocked</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label class="label">Start Day</label>
-          <input class="input" type="number" [(ngModel)]="panelStartDay" />
-        </div>
-
-        <div class="field">
-          <label class="label">End Day</label>
-          <input class="input" type="number" [(ngModel)]="panelEndDay" />
-        </div>
-
-        <!-- @upgrade: Replace day inputs with ngb-datepicker + ISO dates -->
-        <!-- @upgrade: Replace ngModel with Reactive Forms + validators + inline overlap error -->
-      </div>
-
-      <footer class="panel__footer">
-        <button class="btn btn--ghost" type="button" (click)="closePanel()">Cancel</button>
-        <button class="btn btn--primary" type="button" (click)="submitPanel()">
-          {{ panelMode === 'edit' ? 'Save' : 'Create' }}
-        </button>
-      </footer>
-    </aside>
-  </div>
+  <!-- Extracted panel -->
+  <app-work-order-panel
+    *ngIf="panelOpen && panelInitial"
+    [mode]="panelMode"
+    [initial]="panelInitial"
+    [externalError]="panelExternalError"
+    (changed)="onPanelChanged()"
+    (close)="onPanelClose()"
+    (submit)="onPanelSubmit($event)"
+  ></app-work-order-panel>
 </div>

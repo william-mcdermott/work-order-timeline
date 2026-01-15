@@ -1,19 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
 import { TimelineHeaderComponent, TimelineColumnVm as HeaderColumnVm } from './timeline-header/timeline-header';
 import { TimelineGridComponent, TimelineColumnVm as GridColumnVm } from './timeline-grid/timeline-grid';
+import {
+  WorkOrderPanelComponent,
+  PanelMode,
+  WorkOrderPanelInput,
+  WorkOrderPanelSubmit,
+  WorkOrderStatus,
+} from './work-order-panel/work-order-panel';
 
 type WorkCenter = { id: string; name: string };
 type Timescale = 'day' | 'week' | 'month';
 
-type WorkOrderStatus = 'open' | 'in-progress' | 'complete' | 'blocked';
-
 type TimelineColumn = {
   key: string;
   label: string;
-  days: number; // used to compute width per column
+  days: number;
 };
 
 type WorkOrderBar = {
@@ -25,12 +29,10 @@ type WorkOrderBar = {
   endDay: number; // inclusive
 };
 
-type PanelMode = 'create' | 'edit';
-
 @Component({
   selector: 'app-work-order-timeline',
   standalone: true,
-  imports: [CommonModule, FormsModule, TimelineHeaderComponent, TimelineGridComponent],
+  imports: [CommonModule, TimelineHeaderComponent, TimelineGridComponent, WorkOrderPanelComponent],
   templateUrl: './work-order-timeline.html',
   styleUrls: ['./work-order-timeline.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,16 +73,12 @@ export class WorkOrderTimelineComponent {
   // menu state
   openMenuBarId: string | null = null;
 
-  // panel state (temporary ngModel panel)
+  // panel state (extracted)
   panelOpen = false;
   panelMode: PanelMode = 'create';
-  panelWorkCenterId: string | null = null;
   panelEditingId: string | null = null;
-
-  panelStartDay = 0;
-  panelEndDay = 0;
-  panelName = '';
-  panelStatus: WorkOrderStatus = 'open';
+  panelInitial: WorkOrderPanelInput | null = null;
+  panelExternalError: string | null = null;
 
   constructor() {
     this.applyTimescale(this.timescale);
@@ -108,14 +106,13 @@ export class WorkOrderTimelineComponent {
     }
 
     if (ts === 'week') {
-      this.pixelsPerDay = 20; // 140px/week
-      this.totalDays = 112; // 16 weeks
+      this.pixelsPerDay = 20;
+      this.totalDays = 112;
       this.todayDayIndex = 56;
       this.columns = this.buildWeekColumns(this.totalDays);
       return;
     }
 
-    // month
     this.pixelsPerDay = 8;
     this.totalDays = 365;
     this.todayDayIndex = 182;
@@ -156,7 +153,7 @@ export class WorkOrderTimelineComponent {
     el.scrollLeft = Math.max(0, target);
   }
 
-  // ---------------- Row click → Create ----------------
+  // ---------------- Create from click ----------------
 
   openCreateFromClick(workCenterId: string, evt: MouseEvent) {
     this.closeMenu();
@@ -175,13 +172,15 @@ export class WorkOrderTimelineComponent {
     this.panelOpen = true;
     this.panelMode = 'create';
     this.panelEditingId = null;
+    this.panelExternalError = null;
 
-    this.panelWorkCenterId = workCenterId;
-    this.panelStartDay = startDay;
-    this.panelEndDay = endDay;
-
-    this.panelName = '';
-    this.panelStatus = 'open';
+    this.panelInitial = {
+      workCenterId,
+      name: '',
+      status: 'open',
+      startDay,
+      endDay,
+    };
   }
 
   // ---------------- Edit / Delete ----------------
@@ -195,12 +194,15 @@ export class WorkOrderTimelineComponent {
     this.panelOpen = true;
     this.panelMode = 'edit';
     this.panelEditingId = bar.id;
+    this.panelExternalError = null;
 
-    this.panelWorkCenterId = bar.workCenterId;
-    this.panelName = bar.name;
-    this.panelStatus = bar.status;
-    this.panelStartDay = bar.startDay;
-    this.panelEndDay = bar.endDay;
+    this.panelInitial = {
+      workCenterId: bar.workCenterId,
+      name: bar.name,
+      status: bar.status,
+      startDay: bar.startDay,
+      endDay: bar.endDay,
+    };
   }
 
   deleteBar(barId: string) {
@@ -208,64 +210,48 @@ export class WorkOrderTimelineComponent {
     this.bars = this.bars.filter(b => b.id !== barId);
   }
 
-  // ---------------- Panel submit ----------------
+  // ---------------- Panel events ----------------
 
-  submitPanel() {
-    const wcId = this.panelWorkCenterId;
-    if (!wcId) return;
-
-    const name = this.panelName.trim();
-    if (!name) return;
-
-    const startDay = this.clampDay(Math.min(this.panelStartDay, this.panelEndDay));
-    const endDay = this.clampDay(Math.max(this.panelStartDay, this.panelEndDay));
-
-    if (this.panelMode === 'create') {
-      const candidate: WorkOrderBar = {
-        id: `wo-${crypto.randomUUID()}`,
-        workCenterId: wcId,
-        name,
-        status: this.panelStatus,
-        startDay,
-        endDay,
-      };
-
-      if (this.hasOverlap(candidate)) {
-        alert('Overlap detected: work orders cannot overlap on the same work center.');
-        return;
-      }
-
-      this.bars = [...this.bars, candidate];
-      this.closePanel();
-      return;
-    }
-
-    const editingId = this.panelEditingId;
-    if (!editingId) return;
-
-    const updated: WorkOrderBar = {
-      id: editingId,
-      workCenterId: wcId,
-      name,
-      status: this.panelStatus,
-      startDay,
-      endDay,
-    };
-
-    if (this.hasOverlap(updated, editingId)) {
-      alert('Overlap detected: work orders cannot overlap on the same work center.');
-      return;
-    }
-
-    this.bars = this.bars.map(b => (b.id === editingId ? updated : b));
-    this.closePanel();
-  }
-
-  closePanel() {
+  onPanelClose() {
     this.panelOpen = false;
     this.panelMode = 'create';
     this.panelEditingId = null;
-    this.panelWorkCenterId = null;
+    this.panelInitial = null;
+    this.panelExternalError = null;
+  }
+
+  onPanelChanged() {
+    // clear overlap error once the user edits anything
+    this.panelExternalError = null;
+  }
+
+  onPanelSubmit(value: WorkOrderPanelSubmit) {
+    // overlap check happens here (panel doesn’t know about other bars)
+    const candidate: WorkOrderBar = {
+      id: this.panelMode === 'edit' && this.panelEditingId ? this.panelEditingId : `wo-${crypto.randomUUID()}`,
+      workCenterId: value.workCenterId,
+      name: value.name,
+      status: value.status,
+      startDay: this.clampDay(value.startDay),
+      endDay: this.clampDay(value.endDay),
+    };
+
+    const excludeId = this.panelMode === 'edit' ? this.panelEditingId ?? undefined : undefined;
+
+    if (this.hasOverlap(candidate, excludeId)) {
+      this.panelExternalError = 'Overlap detected: work orders cannot overlap on the same work center.';
+      return;
+    }
+
+    if (this.panelMode === 'create') {
+      this.bars = [...this.bars, candidate];
+      this.onPanelClose();
+      return;
+    }
+
+    // edit
+    this.bars = this.bars.map(b => (b.id === candidate.id ? candidate : b));
+    this.onPanelClose();
   }
 
   // ---------------- Menu state ----------------
@@ -281,10 +267,6 @@ export class WorkOrderTimelineComponent {
 
   onGlobalClick() {
     this.closeMenu();
-  }
-
-  stopRowClick(evt: MouseEvent) {
-    evt.stopPropagation();
   }
 
   // ---------------- Overlap ----------------
@@ -334,11 +316,7 @@ export class WorkOrderTimelineComponent {
     while (dayCursor < totalDays) {
       const len = monthLengths[m % monthLengths.length];
       const days = Math.min(len, totalDays - dayCursor);
-      cols.push({
-        key: `m-${m}`,
-        label: `Month ${m + 1}`,
-        days,
-      });
+      cols.push({ key: `m-${m}`, label: `Month ${m + 1}`, days });
       dayCursor += days;
       m++;
     }
@@ -346,6 +324,6 @@ export class WorkOrderTimelineComponent {
     return cols;
   }
 
-  // trackbys (mostly used by left list)
+  // trackby for left list
   trackById = (_: number, wc: WorkCenter) => wc.id;
 }
