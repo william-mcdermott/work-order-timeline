@@ -1,10 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 
 import { TimelineHeaderComponent } from './timeline-header/timeline-header';
 import { TimelineGridComponent } from './timeline-grid/timeline-grid';
@@ -35,18 +30,19 @@ type WorkOrder = {
   name: string;
   status: WorkOrderStatus;
   startDate: string; // ISO
-  endDate: string;   // ISO
+  endDate: string; // ISO
+};
+
+type BarMenuTogglePayload = {
+  id: string;
+  rect: DOMRect;
+  event: MouseEvent;
 };
 
 @Component({
   selector: 'app-work-order-timeline',
   standalone: true,
-  imports: [
-    CommonModule,
-    TimelineHeaderComponent,
-    TimelineGridComponent,
-    WorkOrderPanelComponent,
-  ],
+  imports: [CommonModule, TimelineHeaderComponent, TimelineGridComponent, WorkOrderPanelComponent],
   templateUrl: './work-order-timeline.html',
   styleUrls: ['./work-order-timeline.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,10 +55,6 @@ export class WorkOrderTimelineComponent {
 
   private readonly LS_KEY = 'work-order-timeline.workOrders.v1';
 
-  /* =====================
-     Sample data
-     ===================== */
-
   workCenters: WorkCenter[] = [
     { id: 'wc-1', name: 'Extrusion Line A' },
     { id: 'wc-2', name: 'CNC Machine 1' },
@@ -72,19 +64,15 @@ export class WorkOrderTimelineComponent {
   ];
 
   workOrders: WorkOrder[] = [
-    { id: 'wo-1', workCenterId: 'wc-1', name: 'Extrude Batch 1042', status: 'complete',    startDate: '2026-01-03', endDate: '2026-01-06' },
-    { id: 'wo-2', workCenterId: 'wc-1', name: 'Extrude Batch 1043', status: 'open',        startDate: '2026-01-09', endDate: '2026-01-12' },
+    { id: 'wo-1', workCenterId: 'wc-1', name: 'Extrude Batch 1042', status: 'complete', startDate: '2026-01-03', endDate: '2026-01-06' },
+    { id: 'wo-2', workCenterId: 'wc-1', name: 'Extrude Batch 1043', status: 'open', startDate: '2026-01-09', endDate: '2026-01-12' },
     { id: 'wo-3', workCenterId: 'wc-1', name: 'Extrude Batch 1044', status: 'in-progress', startDate: '2026-01-15', endDate: '2026-01-19' },
-    { id: 'wo-4', workCenterId: 'wc-2', name: 'Mill Housing A',     status: 'in-progress', startDate: '2026-01-07', endDate: '2026-01-13' },
-    { id: 'wo-5', workCenterId: 'wc-2', name: 'Drill Plate Set 2',  status: 'blocked',     startDate: '2026-01-16', endDate: '2026-01-18' },
-    { id: 'wo-6', workCenterId: 'wc-3', name: 'Assemble Unit K',    status: 'open',        startDate: '2026-01-05', endDate: '2026-01-08' },
-    { id: 'wo-7', workCenterId: 'wc-3', name: 'Assemble Unit L',    status: 'complete',    startDate: '2026-01-10', endDate: '2026-01-11' },
-    { id: 'wo-8', workCenterId: 'wc-3', name: 'Assemble Unit M',    status: 'blocked',     startDate: '2026-01-21', endDate: '2026-01-24' },
+    { id: 'wo-4', workCenterId: 'wc-2', name: 'Mill Housing A', status: 'in-progress', startDate: '2026-01-07', endDate: '2026-01-13' },
+    { id: 'wo-5', workCenterId: 'wc-2', name: 'Drill Plate Set 2', status: 'blocked', startDate: '2026-01-16', endDate: '2026-01-18' },
+    { id: 'wo-6', workCenterId: 'wc-3', name: 'Assemble Unit K', status: 'open', startDate: '2026-01-05', endDate: '2026-01-08' },
+    { id: 'wo-7', workCenterId: 'wc-3', name: 'Assemble Unit L', status: 'complete', startDate: '2026-01-10', endDate: '2026-01-11' },
+    { id: 'wo-8', workCenterId: 'wc-3', name: 'Assemble Unit M', status: 'blocked', startDate: '2026-01-21', endDate: '2026-01-24' },
   ];
-
-  /* =====================
-     Timeline state
-     ===================== */
 
   timescale: Timescale = 'day';
   pixelsPerDay = 56;
@@ -93,15 +81,14 @@ export class WorkOrderTimelineComponent {
   timelineStartDate = startOfDay(addDays(new Date(), -14));
   columns: TimelineColumn[] = [];
 
+  /* Bar action menu (fixed-position) */
   openMenuBarId: string | null = null;
+  menuRect: DOMRect | null = null;
 
-  /* =====================
-     Timescale dropdown UI
-     ===================== */
-
+  /* Timescale dropdown UI */
   timescaleOpen = false;
-
-  readonly timescaleOptions: Array<{ label: string; value: 'day' | 'week' | 'month' }> = [
+  readonly timescaleOptions: Array<{ label: string; value: 'hour' | 'day' | 'week' | 'month' }> = [
+    { label: 'Hour', value: 'hour' }, // shown in design
     { label: 'Day', value: 'day' },
     { label: 'Week', value: 'week' },
     { label: 'Month', value: 'month' },
@@ -118,17 +105,17 @@ export class WorkOrderTimelineComponent {
     this.timescaleOpen = !this.timescaleOpen;
   }
 
-  selectTimescale(value: 'day' | 'week' | 'month', evt?: MouseEvent) {
+  selectTimescale(value: 'hour' | 'day' | 'week' | 'month', evt?: MouseEvent) {
     evt?.stopPropagation();
     this.timescaleOpen = false;
-
+    if (value === 'hour') {
+      // @upgrade: hour view isn't required by spec; implement later if desired.
+      return;
+    }
     this.setTimescale(value);
   }
 
-  /* =====================
-     Panel state
-     ===================== */
-
+  /* Panel state */
   panelOpen = false;
   panelMode: PanelMode = 'create';
   panelEditingId: string | null = null;
@@ -142,10 +129,6 @@ export class WorkOrderTimelineComponent {
     this.applyTimescale(this.timescale);
     queueMicrotask(() => this.centerOnToday());
   }
-
-  /* =====================
-     Helpers / handlers
-     ===================== */
 
   trackById = (_: number, item: { id: string }) => item.id;
 
@@ -165,12 +148,28 @@ export class WorkOrderTimelineComponent {
     this.centerOnToday();
   }
 
+  private applyTimescale(ts: Timescale) {
+    if (ts === 'day') {
+      this.pixelsPerDay = 56;
+      this.totalDays = 29;
+      this.columns = this.buildDayColumns(this.totalDays);
+    } else if (ts === 'week') {
+      this.pixelsPerDay = 20;
+      this.totalDays = 112;
+      this.columns = this.buildWeekColumns(this.totalDays);
+    } else {
+      this.pixelsPerDay = 8;
+      this.totalDays = 365;
+      this.columns = this.buildMonthColumns(this.totalDays);
+    }
+  }
+
   totalWidthPx() {
     return this.totalDays * this.pixelsPerDay;
   }
 
   headerColumns() {
-    return this.columns.map(c => ({
+    return this.columns.map((c) => ({
       key: c.key,
       label: c.label,
       widthPx: c.days * this.pixelsPerDay,
@@ -178,14 +177,14 @@ export class WorkOrderTimelineComponent {
   }
 
   gridColumns() {
-    return this.columns.map(c => ({
+    return this.columns.map((c) => ({
       key: c.key,
       widthPx: c.days * this.pixelsPerDay,
     }));
   }
 
   barsVm() {
-    return this.workOrders.map(w => ({
+    return this.workOrders.map((w) => ({
       id: w.id,
       workCenterId: w.workCenterId,
       name: w.name,
@@ -218,7 +217,7 @@ export class WorkOrderTimelineComponent {
   }
 
   openEdit(id: string) {
-    const w = this.workOrders.find(x => x.id === id);
+    const w = this.workOrders.find((x) => x.id === id);
     if (!w) return;
 
     this.panelMode = 'edit';
@@ -229,7 +228,7 @@ export class WorkOrderTimelineComponent {
   }
 
   deleteBar(id: string) {
-    this.workOrders = this.workOrders.filter(w => w.id !== id);
+    this.workOrders = this.workOrders.filter((w) => w.id !== id);
     this.saveWorkOrders();
   }
 
@@ -247,9 +246,7 @@ export class WorkOrderTimelineComponent {
     if (this.panelMode === 'create') {
       this.workOrders = [...this.workOrders, candidate];
     } else {
-      this.workOrders = this.workOrders.map(w =>
-        w.id === candidate.id ? candidate : w
-      );
+      this.workOrders = this.workOrders.map((w) => (w.id === candidate.id ? candidate : w));
     }
 
     this.saveWorkOrders();
@@ -263,34 +260,24 @@ export class WorkOrderTimelineComponent {
     this.panelExternalError = null;
   }
 
-  toggleMenu(id: string, evt: MouseEvent) {
-    evt.stopPropagation();
-    this.openMenuBarId = this.openMenuBarId === id ? null : id;
+  /* Receive fixed-position menu anchor rect from bar */
+  onToggleMenu(payload: BarMenuTogglePayload) {
+    payload.event.stopPropagation();
+
+    if (this.openMenuBarId === payload.id) {
+      this.openMenuBarId = null;
+      this.menuRect = null;
+      return;
+    }
+
+    this.openMenuBarId = payload.id;
+    this.menuRect = payload.rect;
   }
 
   onGlobalClick() {
     this.openMenuBarId = null;
+    this.menuRect = null;
     this.timescaleOpen = false;
-  }
-
-  /* =====================
-     Internal helpers
-     ===================== */
-
-  private applyTimescale(ts: Timescale) {
-    if (ts === 'day') {
-      this.pixelsPerDay = 56;
-      this.totalDays = 29;
-      this.columns = this.buildDayColumns(this.totalDays);
-    } else if (ts === 'week') {
-      this.pixelsPerDay = 20;
-      this.totalDays = 112;
-      this.columns = this.buildWeekColumns(this.totalDays);
-    } else {
-      this.pixelsPerDay = 8;
-      this.totalDays = 365;
-      this.columns = this.buildMonthColumns(this.totalDays);
-    }
   }
 
   private hasOverlap(candidate: WorkOrder, excludeId?: string) {
@@ -298,8 +285,8 @@ export class WorkOrderTimelineComponent {
     const aEnd = parseIso(candidate.endDate);
 
     return this.workOrders
-      .filter(w => w.workCenterId === candidate.workCenterId && w.id !== excludeId)
-      .some(w => {
+      .filter((w) => w.workCenterId === candidate.workCenterId && w.id !== excludeId)
+      .some((w) => {
         const bStart = parseIso(w.startDate);
         const bEnd = parseIso(w.endDate);
         return aStart <= bEnd && bStart <= aEnd;
@@ -369,35 +356,27 @@ export class WorkOrderTimelineComponent {
   }
 }
 
-/* =====================
-   Date helpers
-   ===================== */
-
+/* helpers */
 function startOfDay(d: Date) {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
   return x;
 }
-
 function addDays(d: Date, days: number) {
   const x = new Date(d);
   x.setDate(x.getDate() + days);
   return x;
 }
-
 function diffDays(a: Date, b: Date) {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
-
 function parseIso(iso: string) {
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(y, m - 1, d);
 }
-
 function toIso(d: Date) {
   return d.toISOString().slice(0, 10);
 }
-
 function toShortDate(d: Date) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

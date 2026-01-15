@@ -2,52 +2,70 @@
   position: relative;
 }
 
-/* Each WC row wrapper */
+/* Each work-center row wrapper */
 .row {
   height: 56px;
 }
 
-/* The actual timeline track (right side surface) */
+/* Alternating row background (NO opacity) */
+.row.is-even .track {
+  background-color: rgba(248, 250, 252, 0.85);
+}
+
+/* Timeline surface for each row */
 .track {
   position: relative;
   height: 56px;
+  width: 100%;
 
-  /* Subtle “surface” tint like the Sketch */
-  background: #f8fafc;
+  /* Base surface color */
+  background-color: #ffffff;
+
+  /* NEVER use opacity here — it breaks dropdowns */
+  opacity: 1;
+
+  /* Horizontal separator */
   border-bottom: 1px solid #eef2f7;
 
-  /* Zebra striping */
-  .row.is-even & {
-    background: #f5f8fc;
-  }
-
-  /* Hover highlight */
-  &:hover {
-    background: #eef2ff;
-  }
-
-  /* Quiet vertical gridlines (much lighter than borders) */
-  background-image: linear-gradient(
+  /* Vertical grid lines (day view aligns to 56px) */
+  background-image: repeating-linear-gradient(
     to right,
-    rgba(15, 23, 42, 0.05) 1px,
-    transparent 1px
+    rgba(15, 23, 42, 0.06) 0,
+    rgba(15, 23, 42, 0.06) 1px,
+    transparent 1px,
+    transparent 56px
   );
-  background-size: var(--colWidthPx) 100%;
-  background-position: 0 0;
 }
 
-/* “Click to add dates” hint styling */
+/* Hover state (RGBA tint, not opacity) */
+.track:hover {
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* Layer that contains the bars */
+.bars-layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* Empty-row hint */
 .hint {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+
   font-size: 12px;
   font-weight: 700;
   color: #94a3b8;
-  background: rgba(255, 255, 255, 0.75);
+
+  background-color: #ffffff;
   border: 1px solid rgba(148, 163, 184, 0.25);
   padding: 6px 10px;
   border-radius: 999px;
+
   pointer-events: none;
+
+  /* Keep hint crisp over tinted rows */
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.10);
 }

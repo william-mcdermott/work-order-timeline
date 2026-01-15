@@ -13,13 +13,18 @@
 
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
   border: 1px solid rgba(15, 23, 42, 0.06);
+
+  /* Dropdown is now rendered globally, so no need for menu overflow hacks */
   overflow: hidden;
+
+  z-index: 10;
 }
 
 .bar__label {
   font-size: 13px;
   font-weight: 700;
   color: #0f172a;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -85,31 +90,9 @@
   &:hover {
     background: rgba(15, 23, 42, 0.06);
   }
-}
 
-.menu {
-  position: absolute;
-  right: 8px;
-  top: 42px;
-  background: #ffffff;
-  border: 1px solid #e8edf5;
-  border-radius: 12px;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
-  overflow: hidden;
-  z-index: 50;
-
-  button {
-    width: 100%;
-    border: 0;
-    background: transparent;
-    padding: 10px 12px;
-    text-align: left;
-    font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-
-    &:hover {
-      background: #f8fafc;
-    }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.35);
   }
 }

@@ -1,19 +1,18 @@
 <div
-  class="bar"
-  [class]="'bar bar--' + bar.status"
+  class="bar bar--{{ bar.status }}"
   [style.left.px]="leftPx"
   [style.width.px]="widthPx"
+  (click)="$event.stopPropagation()"
 >
-  <div class="bar__label">{{ bar.name }}</div>
-
-  <div class="badge" [class]="'badge badge--' + bar.status">
-    {{ statusLabel(bar.status) }}
+  <div class="bar__label" title="{{ bar.name }}">
+    {{ bar.name }}
   </div>
 
-  <button class="kebab" type="button" (click)="onToggleMenu($event)">⋯</button>
+  <span class="badge badge--{{ bar.status }}">
+    {{ statusLabel() }}
+  </span>
 
-  <div class="menu" *ngIf="menuOpen">
-    <button type="button" (click)="edit.emit(bar.id)">Edit</button>
-    <button type="button" (click)="delete.emit(bar.id)">Delete</button>
-  </div>
+  <button class="kebab" type="button" (click)="onKebabClick($event)" aria-label="Actions">
+    …
+  </button>
 </div>

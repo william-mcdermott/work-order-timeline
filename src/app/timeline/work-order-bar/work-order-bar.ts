@@ -3,13 +3,19 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 
 export type WorkOrderStatus = 'open' | 'in-progress' | 'complete' | 'blocked';
 
-export type WorkOrderBarVm = {
+export type WorkOrderBarVM = {
   id: string;
   workCenterId: string;
   name: string;
   status: WorkOrderStatus;
   startDay: number;
   endDay: number;
+};
+
+export type BarMenuTogglePayload = {
+  id: string;
+  rect: DOMRect;
+  event: MouseEvent;
 };
 
 @Component({
@@ -21,13 +27,12 @@ export type WorkOrderBarVm = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkOrderBarComponent {
-  @Input({ required: true }) bar!: WorkOrderBarVm;
+  @Input({ required: true }) bar!: WorkOrderBarVM;
   @Input({ required: true }) pixelsPerDay!: number;
 
-  /** Controlled by parent so only one menu opens at a time */
   @Input() menuOpen = false;
 
-  @Output() toggleMenu = new EventEmitter<MouseEvent>();
+  @Output() toggleMenu = new EventEmitter<BarMenuTogglePayload>();
   @Output() edit = new EventEmitter<string>();
   @Output() delete = new EventEmitter<string>();
 
@@ -40,13 +45,8 @@ export class WorkOrderBarComponent {
     return days * this.pixelsPerDay;
   }
 
-  onToggleMenu(evt: MouseEvent) {
-    evt.stopPropagation();
-    this.toggleMenu.emit(evt);
-  }
-
-  statusLabel(s: WorkOrderStatus): string {
-    switch (s) {
+  statusLabel(): string {
+    switch (this.bar.status) {
       case 'open':
         return 'Open';
       case 'in-progress':
@@ -55,8 +55,22 @@ export class WorkOrderBarComponent {
         return 'Complete';
       case 'blocked':
         return 'Blocked';
-      default:
-        return s;
     }
+  }
+
+  onKebabClick(evt: MouseEvent) {
+    evt.stopPropagation();
+    const rect = (evt.currentTarget as HTMLElement).getBoundingClientRect();
+    this.toggleMenu.emit({ id: this.bar.id, rect, event: evt });
+  }
+
+  onEditClick(evt: MouseEvent) {
+    evt.stopPropagation();
+    this.edit.emit(this.bar.id);
+  }
+
+  onDeleteClick(evt: MouseEvent) {
+    evt.stopPropagation();
+    this.delete.emit(this.bar.id);
   }
 }

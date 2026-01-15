@@ -15,7 +15,7 @@
         [bar]="b"
         [pixelsPerDay]="pixelsPerDay"
         [menuOpen]="openMenuBarId === b.id"
-        (toggleMenu)="onToggleMenu(b.id, $event)"
+        (toggleMenu)="onToggleMenu($event)"
         (edit)="edit.emit($event)"
         (delete)="delete.emit($event)"
       ></app-work-order-bar>

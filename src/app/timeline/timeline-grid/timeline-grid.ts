@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { WorkOrderBarComponent } from '../work-order-bar/work-order-bar';
+import { BarMenuTogglePayload, WorkOrderBarComponent } from '../work-order-bar/work-order-bar';
 
 type WorkCenter = { id: string; name: string };
 
@@ -35,22 +35,21 @@ export class TimelineGridComponent {
   @Input() openMenuBarId: string | null = null;
 
   @Output() rowClick = new EventEmitter<{ workCenterId: string; event: MouseEvent }>();
-  @Output() toggleMenu = new EventEmitter<{ id: string; event: MouseEvent }>();
+  @Output() toggleMenu = new EventEmitter<BarMenuTogglePayload>();
   @Output() edit = new EventEmitter<string>();
   @Output() delete = new EventEmitter<string>();
 
   barsFor(workCenterId: string): WorkOrderBarVm[] {
-    return this.bars.filter(b => b.workCenterId === workCenterId);
+    return this.bars.filter((b) => b.workCenterId === workCenterId);
   }
 
   onRowClick(workCenterId: string, evt: MouseEvent) {
     this.rowClick.emit({ workCenterId, event: evt });
   }
 
-  onToggleMenu(id: string, evt: MouseEvent) {
-    this.toggleMenu.emit({ id, event: evt });
+  onToggleMenu(payload: BarMenuTogglePayload) {
+    this.toggleMenu.emit(payload);
   }
-
   trackByWc = (_: number, wc: WorkCenter) => wc.id;
   trackById = (_: number, b: WorkOrderBarVm) => b.id;
 }

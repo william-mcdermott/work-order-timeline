@@ -18,6 +18,7 @@
             class="menu-item"
             *ngFor="let opt of timescaleOptions"
             [class.is-selected]="opt.value === timescale"
+            [class.is-disabled]="opt.value === 'hour'"
             (click)="selectTimescale(opt.value, $event)"
           >
             {{ opt.label }}
@@ -33,7 +34,6 @@
     <div class="timeline__grid">
       <div class="timeline__left">
         <div class="header__cell">Work Center</div>
-
         <div class="row-left" *ngFor="let wc of workCenters; trackBy: trackById">
           {{ wc.name }}
         </div>
@@ -51,7 +51,7 @@
               [pixelsPerDay]="pixelsPerDay"
               [openMenuBarId]="openMenuBarId"
               (rowClick)="openCreateFromClick($event.workCenterId, $event.event)"
-              (toggleMenu)="toggleMenu($event.id, $event.event)"
+              (toggleMenu)="onToggleMenu($event)"
               (edit)="openEdit($event)"
               (delete)="deleteBar($event)"
             ></app-timeline-grid>
@@ -62,6 +62,18 @@
       </div>
     </div>
   </section>
+
+  <!-- Global fixed-position menu (NOT inside tinted row/bar) -->
+  <div
+    class="floating-menu"
+    *ngIf="openMenuBarId && menuRect"
+    [style.left.px]="menuRect.left"
+    [style.top.px]="menuRect.bottom + 8"
+    (click)="$event.stopPropagation()"
+  >
+    <button type="button" (click)="openEdit(openMenuBarId!)">Edit</button>
+    <button type="button" (click)="deleteBar(openMenuBarId!)">Delete</button>
+  </div>
 
   <app-work-order-panel
     *ngIf="panelOpen && panelInitial"
