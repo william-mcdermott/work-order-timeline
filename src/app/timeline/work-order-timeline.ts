@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 
 import { TimelineHeaderComponent, TimelineColumnVm as HeaderColumnVm } from './timeline-header/timeline-header';
 import { TimelineGridComponent, TimelineColumnVm as GridColumnVm } from './timeline-grid/timeline-grid';
@@ -11,8 +16,16 @@ import {
   WorkOrderStatus,
 } from './work-order-panel/work-order-panel';
 
-type WorkCenter = { id: string; name: string };
+/* ================================
+   Types
+   ================================ */
+
 type Timescale = 'day' | 'week' | 'month';
+
+type WorkCenter = {
+  id: string;
+  name: string;
+};
 
 type TimelineColumn = {
   key: string;
@@ -20,19 +33,28 @@ type TimelineColumn = {
   days: number;
 };
 
-type WorkOrderBar = {
+type WorkOrder = {
   id: string;
   workCenterId: string;
   name: string;
   status: WorkOrderStatus;
-  startDay: number;
-  endDay: number; // inclusive
+  startDate: string; // ISO
+  endDate: string;   // ISO
 };
+
+/* ================================
+   Component
+   ================================ */
 
 @Component({
   selector: 'app-work-order-timeline',
   standalone: true,
-  imports: [CommonModule, TimelineHeaderComponent, TimelineGridComponent, WorkOrderPanelComponent],
+  imports: [
+    CommonModule,
+    TimelineHeaderComponent,
+    TimelineGridComponent,
+    WorkOrderPanelComponent,
+  ],
   templateUrl: './work-order-timeline.html',
   styleUrls: ['./work-order-timeline.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,7 +62,12 @@ type WorkOrderBar = {
 export class WorkOrderTimelineComponent {
   title = 'Work Orders';
 
-  @ViewChild('scrollEl', { static: true }) scrollEl!: ElementRef<HTMLDivElement>;
+  @ViewChild('scrollEl', { static: true })
+  scrollEl!: ElementRef<HTMLDivElement>;
+
+  /* ================================
+     Static data
+     ================================ */
 
   workCenters: WorkCenter[] = [
     { id: 'wc-1', name: 'Extrusion Line A' },
@@ -50,30 +77,52 @@ export class WorkOrderTimelineComponent {
     { id: 'wc-5', name: 'Packaging Line' },
   ];
 
-  timescale: Timescale = 'day';
-
-  todayDayIndex = 14;
-  pixelsPerDay = 56;
-
-  columns: TimelineColumn[] = [];
-  totalDays = 29;
-
-  bars: WorkOrderBar[] = [
-    { id: 'wo-1', workCenterId: 'wc-1', name: 'Extrude Batch 1042', status: 'complete', startDay: 2, endDay: 6 },
-    { id: 'wo-2', workCenterId: 'wc-1', name: 'Extrude Batch 1043', status: 'open', startDay: 9, endDay: 11 },
-
-    { id: 'wo-3', workCenterId: 'wc-2', name: 'Mill Housing A', status: 'in-progress', startDay: 8, endDay: 16 },
-
-    { id: 'wo-4', workCenterId: 'wc-3', name: 'Assemble Unit K', status: 'open', startDay: 5, endDay: 7 },
-    { id: 'wo-5', workCenterId: 'wc-3', name: 'Assemble Unit L', status: 'blocked', startDay: 12, endDay: 15 },
-
-    { id: 'wo-6', workCenterId: 'wc-4', name: 'QC Audit 7A', status: 'in-progress', startDay: 0, endDay: 13 },
+  workOrders: WorkOrder[] = [
+    {
+      id: 'wo-1',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1042',
+      status: 'complete',
+      startDate: '2026-01-10',
+      endDate: '2026-01-14',
+    },
+    {
+      id: 'wo-2',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1043',
+      status: 'open',
+      startDate: '2026-01-18',
+      endDate: '2026-01-20',
+    },
+    {
+      id: 'wo-3',
+      workCenterId: 'wc-3',
+      name: 'Assemble Unit K',
+      status: 'in-progress',
+      startDate: '2026-01-13',
+      endDate: '2026-01-17',
+    },
   ];
 
-  // menu state
+  /* ================================
+     Timeline state
+     ================================ */
+
+  timescale: Timescale = 'day';
+  pixelsPerDay = 56;
+  totalDays = 29;
+
+  /** Day 0 anchor for the timeline */
+  timelineStartDate = startOfDay(addDays(new Date(), -14));
+
+  columns: TimelineColumn[] = [];
+
+  /* ================================
+     UI state
+     ================================ */
+
   openMenuBarId: string | null = null;
 
-  // panel state (extracted)
   panelOpen = false;
   panelMode: PanelMode = 'create';
   panelEditingId: string | null = null;
@@ -82,25 +131,24 @@ export class WorkOrderTimelineComponent {
 
   constructor() {
     this.applyTimescale(this.timescale);
-    queueMicrotask(() => this.centerScrollOnToday());
+    queueMicrotask(() => this.centerOnToday());
   }
 
-  // ---------------- Zoom ----------------
+  /* ================================
+     Zoom / Columns
+     ================================ */
 
   setTimescale(ts: Timescale) {
-    if (this.timescale === ts) return;
-
+    if (ts === this.timescale) return;
     this.timescale = ts;
     this.applyTimescale(ts);
-
-    queueMicrotask(() => this.centerScrollOnToday());
+    queueMicrotask(() => this.centerOnToday());
   }
 
   private applyTimescale(ts: Timescale) {
     if (ts === 'day') {
       this.pixelsPerDay = 56;
       this.totalDays = 29;
-      this.todayDayIndex = 14;
       this.columns = this.buildDayColumns(this.totalDays);
       return;
     }
@@ -108,14 +156,12 @@ export class WorkOrderTimelineComponent {
     if (ts === 'week') {
       this.pixelsPerDay = 20;
       this.totalDays = 112;
-      this.todayDayIndex = 56;
       this.columns = this.buildWeekColumns(this.totalDays);
       return;
     }
 
     this.pixelsPerDay = 8;
     this.totalDays = 365;
-    this.todayDayIndex = 182;
     this.columns = this.buildMonthColumns(this.totalDays);
   }
 
@@ -142,123 +188,136 @@ export class WorkOrderTimelineComponent {
     }));
   }
 
-  todayLineLeftPx(): number {
-    return this.todayDayIndex * this.pixelsPerDay + this.pixelsPerDay / 2;
+  /* ================================
+     Date ↔ pixel helpers
+     ================================ */
+
+  dateToDayIndex(iso: string): number {
+    const d = parseIso(iso);
+    return diffDays(this.timelineStartDate, d);
   }
 
-  private centerScrollOnToday() {
+  dayIndexToIso(dayIndex: number): string {
+    return toIso(addDays(this.timelineStartDate, dayIndex));
+  }
+
+  todayLineLeftPx(): number {
+    const todayIndex = diffDays(this.timelineStartDate, startOfDay(new Date()));
+    return todayIndex * this.pixelsPerDay + this.pixelsPerDay / 2;
+  }
+
+  private centerOnToday() {
     const el = this.scrollEl?.nativeElement;
     if (!el) return;
     const target = this.todayLineLeftPx() - el.clientWidth / 2;
     el.scrollLeft = Math.max(0, target);
   }
 
-  // ---------------- Create from click ----------------
+  /* ================================
+     Grid → bars mapping
+     ================================ */
+
+  barsVm() {
+    return this.workOrders.map(w => ({
+      id: w.id,
+      workCenterId: w.workCenterId,
+      name: w.name,
+      status: w.status,
+      startDay: this.dateToDayIndex(w.startDate),
+      endDay: this.dateToDayIndex(w.endDate),
+    }));
+  }
+
+  /* ================================
+     Create / Edit
+     ================================ */
 
   openCreateFromClick(workCenterId: string, evt: MouseEvent) {
     this.closeMenu();
 
-    const trackEl = evt.currentTarget as HTMLElement;
-    const rect = trackEl.getBoundingClientRect();
-    const xInTrack = evt.clientX - rect.left;
-
-    const scrollLeft = this.scrollEl.nativeElement.scrollLeft;
-    const x = xInTrack + scrollLeft;
-
+    const track = evt.currentTarget as HTMLElement;
+    const rect = track.getBoundingClientRect();
+    const x = evt.clientX - rect.left + this.scrollEl.nativeElement.scrollLeft;
     const dayIndex = Math.floor(x / this.pixelsPerDay);
-    const startDay = this.clampDay(dayIndex);
-    const endDay = this.clampDay(startDay + 6);
 
-    this.panelOpen = true;
+    const startIso = this.dayIndexToIso(dayIndex);
+    const endIso = this.dayIndexToIso(dayIndex + 6);
+
     this.panelMode = 'create';
     this.panelEditingId = null;
     this.panelExternalError = null;
-
     this.panelInitial = {
       workCenterId,
       name: '',
       status: 'open',
-      startDay,
-      endDay,
+      startDate: startIso,
+      endDate: endIso,
     };
-  }
-
-  // ---------------- Edit / Delete ----------------
-
-  openEdit(barId: string) {
-    const bar = this.bars.find(b => b.id === barId);
-    if (!bar) return;
-
-    this.closeMenu();
-
     this.panelOpen = true;
-    this.panelMode = 'edit';
-    this.panelEditingId = bar.id;
-    this.panelExternalError = null;
-
-    this.panelInitial = {
-      workCenterId: bar.workCenterId,
-      name: bar.name,
-      status: bar.status,
-      startDay: bar.startDay,
-      endDay: bar.endDay,
-    };
   }
 
-  deleteBar(barId: string) {
+  openEdit(id: string) {
+    const w = this.workOrders.find(o => o.id === id);
+    if (!w) return;
+
     this.closeMenu();
-    this.bars = this.bars.filter(b => b.id !== barId);
-  }
 
-  // ---------------- Panel events ----------------
-
-  onPanelClose() {
-    this.panelOpen = false;
-    this.panelMode = 'create';
-    this.panelEditingId = null;
-    this.panelInitial = null;
+    this.panelMode = 'edit';
+    this.panelEditingId = id;
     this.panelExternalError = null;
+    this.panelInitial = { ...w };
+    this.panelOpen = true;
   }
 
-  onPanelChanged() {
-    // clear overlap error once the user edits anything
-    this.panelExternalError = null;
+  deleteBar(id: string) {
+    this.closeMenu();
+    this.workOrders = this.workOrders.filter(w => w.id !== id);
   }
+
+  /* ================================
+     Panel events
+     ================================ */
 
   onPanelSubmit(value: WorkOrderPanelSubmit) {
-    // overlap check happens here (panel doesn’t know about other bars)
-    const candidate: WorkOrderBar = {
-      id: this.panelMode === 'edit' && this.panelEditingId ? this.panelEditingId : `wo-${crypto.randomUUID()}`,
-      workCenterId: value.workCenterId,
-      name: value.name,
-      status: value.status,
-      startDay: this.clampDay(value.startDay),
-      endDay: this.clampDay(value.endDay),
+    const candidate: WorkOrder = {
+      id: this.panelEditingId ?? crypto.randomUUID(),
+      ...value,
     };
 
     const excludeId = this.panelMode === 'edit' ? this.panelEditingId ?? undefined : undefined;
 
     if (this.hasOverlap(candidate, excludeId)) {
-      this.panelExternalError = 'Overlap detected: work orders cannot overlap on the same work center.';
+      this.panelExternalError = 'Work orders cannot overlap on the same work center.';
       return;
     }
 
     if (this.panelMode === 'create') {
-      this.bars = [...this.bars, candidate];
-      this.onPanelClose();
-      return;
+      this.workOrders = [...this.workOrders, candidate];
+    } else {
+      this.workOrders = this.workOrders.map(w => (w.id === candidate.id ? candidate : w));
     }
 
-    // edit
-    this.bars = this.bars.map(b => (b.id === candidate.id ? candidate : b));
-    this.onPanelClose();
+    this.closePanel();
   }
 
-  // ---------------- Menu state ----------------
+  onPanelChanged() {
+    this.panelExternalError = null;
+  }
 
-  toggleMenu(barId: string, evt: MouseEvent) {
+  closePanel() {
+    this.panelOpen = false;
+    this.panelInitial = null;
+    this.panelEditingId = null;
+    this.panelExternalError = null;
+  }
+
+  /* ================================
+     Menu
+     ================================ */
+
+  toggleMenu(id: string, evt: MouseEvent) {
     evt.stopPropagation();
-    this.openMenuBarId = this.openMenuBarId === barId ? null : barId;
+    this.openMenuBarId = this.openMenuBarId === id ? null : id;
   }
 
   closeMenu() {
@@ -269,29 +328,32 @@ export class WorkOrderTimelineComponent {
     this.closeMenu();
   }
 
-  // ---------------- Overlap ----------------
+  /* ================================
+     Overlap
+     ================================ */
 
-  hasOverlap(candidate: WorkOrderBar, excludeId?: string): boolean {
-    return this.bars
-      .filter(b => b.workCenterId === candidate.workCenterId)
-      .filter(b => b.id !== excludeId)
-      .some(b => this.rangesOverlapInclusive(candidate.startDay, candidate.endDay, b.startDay, b.endDay));
+  hasOverlap(candidate: WorkOrder, excludeId?: string): boolean {
+    const aStart = parseIso(candidate.startDate);
+    const aEnd = parseIso(candidate.endDate);
+
+    return this.workOrders
+      .filter(w => w.workCenterId === candidate.workCenterId)
+      .filter(w => w.id !== excludeId)
+      .some(w => {
+        const bStart = parseIso(w.startDate);
+        const bEnd = parseIso(w.endDate);
+        return aStart <= bEnd && bStart <= aEnd;
+      });
   }
 
-  rangesOverlapInclusive(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
-    return aStart <= bEnd && bStart <= aEnd;
-  }
+  /* ================================
+     Columns builders
+     ================================ */
 
-  clampDay(d: number): number {
-    return Math.max(0, Math.min(this.totalDays - 1, d));
-  }
-
-  // ---------------- Columns (static labels for now) ----------------
-
-  private buildDayColumns(totalDays: number): TimelineColumn[] {
-    return Array.from({ length: totalDays }).map((_, i) => ({
+  private buildDayColumns(total: number): TimelineColumn[] {
+    return Array.from({ length: total }).map((_, i) => ({
       key: `d-${i}`,
-      label: `Day ${i + 1}`,
+      label: toShortDate(addDays(this.timelineStartDate, i)),
       days: 1,
     }));
   }
@@ -306,24 +368,61 @@ export class WorkOrderTimelineComponent {
   }
 
   private buildMonthColumns(totalDays: number): TimelineColumn[] {
-    // @upgrade: replace with real month boundaries anchored around today.
-    const monthLengths = [31, 30, 31, 30, 28, 31, 30, 31, 30, 31, 30, 31];
-
     const cols: TimelineColumn[] = [];
-    let dayCursor = 0;
-    let m = 0;
+    let cursor = this.timelineStartDate;
 
-    while (dayCursor < totalDays) {
-      const len = monthLengths[m % monthLengths.length];
-      const days = Math.min(len, totalDays - dayCursor);
-      cols.push({ key: `m-${m}`, label: `Month ${m + 1}`, days });
-      dayCursor += days;
-      m++;
+    while (diffDays(this.timelineStartDate, cursor) < totalDays) {
+      const start = new Date(cursor);
+      const month = start.getMonth();
+      let days = 0;
+
+      while (cursor.getMonth() === month) {
+        cursor = addDays(cursor, 1);
+        days++;
+      }
+
+      cols.push({
+        key: `m-${start.getFullYear()}-${month}`,
+        label: start.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }),
+        days,
+      });
     }
 
     return cols;
   }
 
-  // trackby for left list
   trackById = (_: number, wc: WorkCenter) => wc.id;
+}
+
+/* ================================
+   Date helpers
+   ================================ */
+
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function addDays(d: Date, days: number): Date {
+  const x = new Date(d);
+  x.setDate(x.getDate() + days);
+  return x;
+}
+
+function diffDays(a: Date, b: Date): number {
+  return Math.round((b.getTime() - a.getTime()) / 86400000);
+}
+
+function parseIso(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function toIso(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+function toShortDate(d: Date): string {
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

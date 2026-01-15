@@ -5,8 +5,7 @@
       <button class="icon-btn" type="button" (click)="close.emit()">✕</button>
     </header>
 
-    <div class="panel__body">
-      <!-- External error (e.g., overlap) -->
+    <div class="panel__body" [formGroup]="form">
       <div class="alert alert--error" *ngIf="externalError">
         {{ externalError }}
       </div>
@@ -19,26 +18,59 @@
 
       <div class="field">
         <label class="label">Status</label>
-        <select class="input" formControlName="status">
-          <option value="open">Open</option>
-          <option value="in-progress">In Progress</option>
-          <option value="complete">Complete</option>
-          <option value="blocked">Blocked</option>
-        </select>
+
+        <ng-select
+          class="ngs"
+          formControlName="status"
+          [items]="statusOptions"
+          bindLabel="label"
+          bindValue="value"
+          [clearable]="false"
+          [searchable]="false"
+          placeholder="Select status"
+        >
+        </ng-select>
       </div>
 
       <div class="field">
-        <label class="label">Start Day</label>
-        <input class="input" type="number" formControlName="startDay" />
+        <label class="label">Start Date</label>
+
+        <div class="date-row">
+          <input
+            class="input date-input"
+            formControlName="startDate"
+            ngbDatepicker
+            #sd="ngbDatepicker"
+            (click)="sd.open()"
+            readonly
+          />
+          <button class="date-btn" type="button" (click)="sd.toggle()">📅</button>
+        </div>
+
+        <div class="error" *ngIf="showStartRequired()">Start date is required.</div>
       </div>
 
       <div class="field">
-        <label class="label">End Day</label>
-        <input class="input" type="number" formControlName="endDay" />
-        <div class="error" *ngIf="showDateOrderError()">End day must be on/after start day.</div>
+        <label class="label">End Date</label>
+
+        <div class="date-row">
+          <input
+            class="input date-input"
+            formControlName="endDate"
+            ngbDatepicker
+            #ed="ngbDatepicker"
+            (click)="ed.open()"
+            readonly
+          />
+          <button class="date-btn" type="button" (click)="ed.toggle()">📅</button>
+        </div>
+
+        <div class="error" *ngIf="showEndRequired()">End date is required.</div>
+        <div class="error" *ngIf="showDateOrderError()">End date must be on/after start date.</div>
       </div>
 
-      <!-- @upgrade: ngb-datepicker fields + ISO format -->
+      <!-- @upgrade: Custom ngb-datepicker styling to match Sketch exactly -->
+      <!-- @upgrade: Replace separate pickers with a true range picker UX -->
     </div>
 
     <footer class="panel__footer">

@@ -1,7 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, Input, Output, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  EventEmitter,
+  Input,
+  Output,
+  inject,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+import { NgSelectModule } from '@ng-select/ng-select';
+import { NgbDateStruct, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 export type WorkOrderStatus = 'open' | 'in-progress' | 'complete' | 'blocked';
 export type PanelMode = 'create' | 'edit';
@@ -10,16 +21,18 @@ export type WorkOrderPanelInput = {
   workCenterId: string;
   name: string;
   status: WorkOrderStatus;
-  startDay: number;
-  endDay: number;
+  startDate: string; // ISO: YYYY-MM-DD
+  endDate: string;   // ISO: YYYY-MM-DD
 };
 
 export type WorkOrderPanelSubmit = WorkOrderPanelInput;
 
+type StatusOption = { value: WorkOrderStatus; label: string };
+
 @Component({
   selector: 'app-work-order-panel',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, NgbDatepickerModule],
   templateUrl: './work-order-panel.html',
   styleUrls: ['./work-order-panel.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,50 +41,51 @@ export class WorkOrderPanelComponent {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
-  /** Parent controls show/hide by *ngIf */
   @Input({ required: true }) mode!: PanelMode;
   @Input({ required: true }) initial!: WorkOrderPanelInput;
 
-  /** Optional error string from parent (e.g., overlap error) */
+  /** Parent overlap error (or other business rule error) */
   @Input() externalError: string | null = null;
 
   @Output() close = new EventEmitter<void>();
   @Output() submit = new EventEmitter<WorkOrderPanelSubmit>();
 
-  /** Clears external error when user edits form */
+  /** Let parent clear overlap error when user modifies form */
   @Output() changed = new EventEmitter<void>();
+
+  statusOptions: StatusOption[] = [
+    { value: 'open', label: 'Open' },
+    { value: 'in-progress', label: 'In Progress' },
+    { value: 'complete', label: 'Complete' },
+    { value: 'blocked', label: 'Blocked' },
+  ];
 
   form = this.fb.group(
     {
-      name: ['', [Validators.required]],
-      status: ['open' as WorkOrderStatus, [Validators.required]],
-      startDay: [0, [Validators.required, Validators.min(0)]],
-      endDay: [0, [Validators.required, Validators.min(0)]],
+      name: this.fb.control<string>('', { nonNullable: true, validators: [Validators.required] }),
+      status: this.fb.control<WorkOrderStatus>('open', { nonNullable: true, validators: [Validators.required] }),
+      startDate: this.fb.control<NgbDateStruct | null>(null, { validators: [Validators.required] }),
+      endDate: this.fb.control<NgbDateStruct | null>(null, { validators: [Validators.required] }),
     },
-    {
-      validators: [this.dateOrderValidator],
-    }
+    { validators: [this.dateOrderValidator] }
   );
 
   ngOnInit() {
-    // Patch initial values into the form
+    // hydrate from initial ISO dates
     this.form.patchValue(
       {
-        name: this.initial.name,
-        status: this.initial.status,
-        startDay: this.initial.startDay,
-        endDay: this.initial.endDay,
+        name: this.initial.name ?? '',
+        status: this.initial.status ?? 'open',
+        startDate: isoToStruct(this.initial.startDate),
+        endDate: isoToStruct(this.initial.endDate),
       },
       { emitEvent: false }
     );
 
-    // Notify parent when user changes anything (so it can clear overlap error)
     this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.changed.emit();
     });
   }
-
-  // -------- UI helpers --------
 
   titleText(): string {
     return 'Work Order Details';
@@ -80,8 +94,6 @@ export class WorkOrderPanelComponent {
   primaryCtaText(): string {
     return this.mode === 'edit' ? 'Save' : 'Create';
   }
-
-  // -------- actions --------
 
   onBackdropClick() {
     this.close.emit();
@@ -103,32 +115,37 @@ export class WorkOrderPanelComponent {
     if (this.form.invalid) return;
 
     const raw = this.form.getRawValue();
+    const start = raw.startDate!;
+    const end = raw.endDate!;
 
-    const start = Math.min(Number(raw.startDay), Number(raw.endDay));
-    const end = Math.max(Number(raw.startDay), Number(raw.endDay));
+    // normalize ordering (in case user picks end before start)
+    const [a, b] = compareStruct(start, end) <= 0 ? [start, end] : [end, start];
 
-    this.submit.emit({
-      workCenterId: this.initial.workCenterId, // WC is decided by row click / bar edit
-      name: String(raw.name).trim(),
-      status: raw.status as WorkOrderStatus,
-      startDay: start,
-      endDay: end,
-    });
+    const payload: WorkOrderPanelSubmit = {
+      workCenterId: this.initial.workCenterId,
+      name: raw.name.trim(),
+      status: raw.status,
+      startDate: structToIso(a),
+      endDate: structToIso(b),
+    };
+
+    this.submit.emit(payload);
   }
 
-  // -------- validators --------
-
-  private dateOrderValidator(group: any) {
-    const start = Number(group?.get?.('startDay')?.value);
-    const end = Number(group?.get?.('endDay')?.value);
-    if (Number.isNaN(start) || Number.isNaN(end)) return null;
-    return end < start ? { dateOrder: true } : null;
-  }
-
-  // -------- error helpers --------
+  // ------- error helpers -------
 
   showNameRequired(): boolean {
     const c = this.form.controls.name;
+    return c.touched && !!c.errors?.['required'];
+  }
+
+  showStartRequired(): boolean {
+    const c = this.form.controls.startDate;
+    return c.touched && !!c.errors?.['required'];
+  }
+
+  showEndRequired(): boolean {
+    const c = this.form.controls.endDate;
     return c.touched && !!c.errors?.['required'];
   }
 
@@ -136,6 +153,39 @@ export class WorkOrderPanelComponent {
     return this.form.touched && !!this.form.errors?.['dateOrder'];
   }
 
-  // @upgrade: replace startDay/endDay numeric inputs with ngb-datepicker + ISO strings.
-  // @upgrade: replace status select with ng-select and match Sketch styling exactly.
+  // ------- validator -------
+
+  private dateOrderValidator(group: any) {
+    const start: NgbDateStruct | null = group?.get?.('startDate')?.value ?? null;
+    const end: NgbDateStruct | null = group?.get?.('endDate')?.value ?? null;
+    if (!start || !end) return null;
+    return compareStruct(end, start) < 0 ? { dateOrder: true } : null;
+  }
+
+  // @upgrade: Match Sketch-perfect ng-select styling (pill, spacing, focus ring).
+  // @upgrade: Replace two-input picker with a nicer date-range UX if time allows.
+}
+
+/** -------- date helpers (local, no deps) -------- */
+
+function isoToStruct(iso: string): NgbDateStruct | null {
+  // expects YYYY-MM-DD
+  if (!iso || iso.length < 10) return null;
+  const [y, m, d] = iso.split('-').map(n => Number(n));
+  if (!y || !m || !d) return null;
+  return { year: y, month: m, day: d };
+}
+
+function structToIso(s: NgbDateStruct): string {
+  const y = String(s.year).padStart(4, '0');
+  const m = String(s.month).padStart(2, '0');
+  const d = String(s.day).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function compareStruct(a: NgbDateStruct, b: NgbDateStruct): number {
+  // returns -1/0/1-ish
+  if (a.year !== b.year) return a.year - b.year;
+  if (a.month !== b.month) return a.month - b.month;
+  return a.day - b.day;
 }

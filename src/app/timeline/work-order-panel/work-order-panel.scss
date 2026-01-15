@@ -92,6 +92,47 @@
   }
 }
 
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 40px;
+  gap: 8px;
+}
+
+.date-input {
+  cursor: pointer;
+  background: #ffffff;
+}
+
+.date-btn {
+  height: 40px;
+  width: 40px;
+  border-radius: 10px;
+  border: 1px solid #d8e0ee;
+  background: #ffffff;
+  cursor: pointer;
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+/* ng-select base – keep minimal, polish later */
+.ngs ::ng-deep .ng-select-container {
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid #d8e0ee;
+  box-shadow: none;
+}
+
+.ngs ::ng-deep .ng-select-container:hover {
+  border-color: #cbd5e1;
+}
+
+.ngs ::ng-deep.ng-select-focused .ng-select-container {
+  border-color: #7aa7ff;
+  box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.25);
+}
+
 .error {
   font-size: 12px;
   font-weight: 600;
