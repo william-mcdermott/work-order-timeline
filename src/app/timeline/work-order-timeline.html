@@ -3,15 +3,24 @@
     <div class="topbar__title">{{ title }}</div>
 
     <div class="topbar__controls">
-      <div class="label">Timescale:</div>
+      <label class="label" for="timescale">Timescale:</label>
 
-      <div class="seg">
-        <button class="seg__btn" [class.is-active]="timescale==='day'" (click)="setTimescale('day')">Day</button>
-        <button class="seg__btn" [class.is-active]="timescale==='week'" (click)="setTimescale('week')">Week</button>
-        <button class="seg__btn" [class.is-active]="timescale==='month'" (click)="setTimescale('month')">Month</button>
+      <div class="select-wrap">
+        <select
+          id="timescale"
+          class="select"
+          [value]="timescale"
+          (change)="setTimescale($any($event.target).value)"
+        >
+          <option value="day">Day</option>
+          <option value="week">Week</option>
+          <option value="month">Month</option>
+        </select>
       </div>
 
-      <button class="today-btn" type="button" (click)="goToToday($event)">Today</button>
+      <button class="today-btn" type="button" (click)="goToToday($event)">
+        Today
+      </button>
     </div>
   </div>
 
@@ -19,7 +28,7 @@
     <div class="timeline__grid">
       <div class="timeline__left">
         <div class="header__cell">Work Center</div>
-        <div class="row-left" *ngFor="let wc of workCenters; trackBy: trackById">
+        <div class="row-left" *ngFor="let wc of workCenters">
           {{ wc.name }}
         </div>
       </div>
@@ -53,7 +62,6 @@
     [mode]="panelMode"
     [initial]="panelInitial"
     [externalError]="panelExternalError"
-    (changed)="onPanelChanged()"
     (close)="closePanel()"
     (submit)="onPanelSubmit($event)"
   ></app-work-order-panel>
