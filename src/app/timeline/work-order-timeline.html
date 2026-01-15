@@ -1,34 +1,40 @@
 <div class="page" (click)="onGlobalClick()">
-  <div class="topbar">
-    <div class="topbar__title">{{ title }}</div>
+  <header class="app-header">
+    <div class="brand">NAOLOGIC</div>
 
-    <div class="topbar__controls">
-      <label class="label" for="timescale">Timescale:</label>
+    <div class="header-row">
+      <h1 class="title">{{ title }}</h1>
+    </div>
 
-      <div class="select-wrap">
-        <select
-          id="timescale"
-          class="select"
-          [value]="timescale"
-          (change)="setTimescale($any($event.target).value)"
-        >
-          <option value="day">Day</option>
-          <option value="week">Week</option>
-          <option value="month">Month</option>
-        </select>
+    <div class="controls">
+      <div class="timescale-pill" (click)="toggleTimescale($event)">
+        <span class="pill-label">Timescale</span>
+        <span class="pill-value">{{ timescaleLabel }}</span>
+        <span class="chevron" aria-hidden="true"></span>
+
+        <div class="timescale-menu" *ngIf="timescaleOpen" (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="menu-item"
+            *ngFor="let opt of timescaleOptions"
+            [class.is-selected]="opt.value === timescale"
+            (click)="selectTimescale(opt.value, $event)"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
       </div>
 
-      <button class="today-btn" type="button" (click)="goToToday($event)">
-        Today
-      </button>
+      <button class="today-btn" type="button" (click)="goToToday($event)">Today</button>
     </div>
-  </div>
+  </header>
 
-  <div class="timeline">
+  <section class="card">
     <div class="timeline__grid">
       <div class="timeline__left">
         <div class="header__cell">Work Center</div>
-        <div class="row-left" *ngFor="let wc of workCenters">
+
+        <div class="row-left" *ngFor="let wc of workCenters; trackBy: trackById">
           {{ wc.name }}
         </div>
       </div>
@@ -55,13 +61,14 @@
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <app-work-order-panel
     *ngIf="panelOpen && panelInitial"
     [mode]="panelMode"
     [initial]="panelInitial"
     [externalError]="panelExternalError"
+    (changed)="onPanelChanged()"
     (close)="closePanel()"
     (submit)="onPanelSubmit($event)"
   ></app-work-order-panel>
