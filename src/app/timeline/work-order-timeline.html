@@ -1,4 +1,4 @@
-<div class="page">
+<div class="page" (click)="onGlobalClick()">
   <div class="topbar">
     <div class="topbar__title">{{ title }}</div>
 
@@ -14,9 +14,8 @@
   </div>
 
   <div class="timeline">
-    <!-- One 2-column grid: left fixed, right scrolls -->
     <div class="timeline__grid">
-      <!-- LEFT (fixed) -->
+      <!-- LEFT -->
       <div class="timeline__left">
         <div class="header__cell">Work Center</div>
 
@@ -25,11 +24,11 @@
         </div>
       </div>
 
-      <!-- RIGHT (single shared horizontal scroll) -->
+      <!-- RIGHT (shared scroll for header + body) -->
       <div class="timeline__right">
         <div class="scroll" #scrollEl>
           <div class="scroll__content" [style.width.px]="totalWidthPx()">
-            <!-- Header columns -->
+            <!-- Header -->
             <div class="grid-header">
               <div
                 class="col"
@@ -40,38 +39,103 @@
               </div>
             </div>
 
-            <!-- Body rows -->
+            <!-- Rows -->
             <div class="grid-body">
               <div class="row" *ngFor="let wc of workCenters; trackBy: trackById">
-                <div class="row-track">
+                <div class="row-track" (click)="openCreateFromClick(wc.id, $event)">
                   <div
                     class="cell"
                     *ngFor="let c of columns; trackBy: trackByCol"
                     [style.width.px]="colWidthPx(c)"
                   ></div>
 
-                  <!-- Bars -->
                   <div
                     class="work-bar"
                     *ngFor="let bar of barsFor(wc.id); trackBy: trackByBar"
                     [style.left.px]="barLeftPx(bar)"
                     [style.width.px]="barWidthPx(bar)"
+                    (click)="stopRowClick($event)"
                   >
                     <div class="work-bar__content">
                       <div class="work-bar__name" title="{{ bar.name }}">{{ bar.name }}</div>
-                      <div class="status-pill" [attr.data-status]="bar.status">{{ bar.status }}</div>
-                      <button type="button" class="dots" aria-label="Actions">⋯</button>
+
+                      <div class="status-pill" [attr.data-status]="bar.status">
+                        {{ bar.status }}
+                      </div>
+
+                      <button
+                        type="button"
+                        class="dots"
+                        aria-label="Actions"
+                        (click)="toggleMenu(bar.id, $event)"
+                      >
+                        ⋯
+                      </button>
+
+                      <div class="menu" *ngIf="openMenuBarId === bar.id" (click)="stopRowClick($event)">
+                        <button type="button" class="menu__item" (click)="openEdit(bar.id)">Edit</button>
+                        <button type="button" class="menu__item menu__item--danger" (click)="deleteBar(bar.id)">
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- One today line for header + body -->
+            <!-- Today line -->
             <div class="today-line" [style.left.px]="todayLineLeftPx()"></div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- PANEL -->
+  <div class="overlay" *ngIf="panelOpen" (click)="closePanel()">
+    <aside class="panel" (click)="stopRowClick($event)">
+      <header class="panel__header">
+        <div class="panel__title">Work Order Details</div>
+        <button class="icon-btn" type="button" (click)="closePanel()">✕</button>
+      </header>
+
+      <div class="panel__body">
+        <div class="field">
+          <label class="label">Work Order Name</label>
+          <input class="input" type="text" [(ngModel)]="panelName" placeholder="e.g., Assemble Unit K" />
+        </div>
+
+        <div class="field">
+          <label class="label">Status</label>
+          <select class="input" [(ngModel)]="panelStatus">
+            <option value="open">Open</option>
+            <option value="in-progress">In Progress</option>
+            <option value="complete">Complete</option>
+            <option value="blocked">Blocked</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label">Start Day</label>
+          <input class="input" type="number" [(ngModel)]="panelStartDay" />
+        </div>
+
+        <div class="field">
+          <label class="label">End Day</label>
+          <input class="input" type="number" [(ngModel)]="panelEndDay" />
+        </div>
+
+        <!-- @upgrade: Replace day inputs with ngb-datepicker + ISO dates -->
+        <!-- @upgrade: Replace ngModel with Reactive Forms + validators + inline overlap error -->
+      </div>
+
+      <footer class="panel__footer">
+        <button class="btn btn--ghost" type="button" (click)="closePanel()">Cancel</button>
+        <button class="btn btn--primary" type="button" (click)="submitPanel()">
+          {{ panelMode === 'edit' ? 'Save' : 'Create' }}
+        </button>
+      </footer>
+    </aside>
   </div>
 </div>
