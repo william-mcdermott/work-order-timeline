@@ -64,14 +64,70 @@ export class WorkOrderTimelineComponent {
   ];
 
   workOrders: WorkOrder[] = [
-    { id: 'wo-1', workCenterId: 'wc-1', name: 'Extrude Batch 1042', status: 'complete', startDate: '2026-01-03', endDate: '2026-01-06' },
-    { id: 'wo-2', workCenterId: 'wc-1', name: 'Extrude Batch 1043', status: 'open', startDate: '2026-01-09', endDate: '2026-01-12' },
-    { id: 'wo-3', workCenterId: 'wc-1', name: 'Extrude Batch 1044', status: 'in-progress', startDate: '2026-01-15', endDate: '2026-01-19' },
-    { id: 'wo-4', workCenterId: 'wc-2', name: 'Mill Housing A', status: 'in-progress', startDate: '2026-01-07', endDate: '2026-01-13' },
-    { id: 'wo-5', workCenterId: 'wc-2', name: 'Drill Plate Set 2', status: 'blocked', startDate: '2026-01-16', endDate: '2026-01-18' },
-    { id: 'wo-6', workCenterId: 'wc-3', name: 'Assemble Unit K', status: 'open', startDate: '2026-01-05', endDate: '2026-01-08' },
-    { id: 'wo-7', workCenterId: 'wc-3', name: 'Assemble Unit L', status: 'complete', startDate: '2026-01-10', endDate: '2026-01-11' },
-    { id: 'wo-8', workCenterId: 'wc-3', name: 'Assemble Unit M', status: 'blocked', startDate: '2026-01-21', endDate: '2026-01-24' },
+    {
+      id: 'wo-1',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1042',
+      status: 'complete',
+      startDate: '2026-01-03',
+      endDate: '2026-01-06',
+    },
+    {
+      id: 'wo-2',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1043',
+      status: 'open',
+      startDate: '2026-01-09',
+      endDate: '2026-01-12',
+    },
+    {
+      id: 'wo-3',
+      workCenterId: 'wc-1',
+      name: 'Extrude Batch 1044',
+      status: 'in-progress',
+      startDate: '2026-01-15',
+      endDate: '2026-01-19',
+    },
+    {
+      id: 'wo-4',
+      workCenterId: 'wc-2',
+      name: 'Mill Housing A',
+      status: 'in-progress',
+      startDate: '2026-01-07',
+      endDate: '2026-01-13',
+    },
+    {
+      id: 'wo-5',
+      workCenterId: 'wc-2',
+      name: 'Drill Plate Set 2',
+      status: 'blocked',
+      startDate: '2026-01-16',
+      endDate: '2026-01-18',
+    },
+    {
+      id: 'wo-6',
+      workCenterId: 'wc-3',
+      name: 'Assemble Unit K',
+      status: 'open',
+      startDate: '2026-01-05',
+      endDate: '2026-01-08',
+    },
+    {
+      id: 'wo-7',
+      workCenterId: 'wc-3',
+      name: 'Assemble Unit L',
+      status: 'complete',
+      startDate: '2026-01-10',
+      endDate: '2026-01-11',
+    },
+    {
+      id: 'wo-8',
+      workCenterId: 'wc-3',
+      name: 'Assemble Unit M',
+      status: 'blocked',
+      startDate: '2026-01-21',
+      endDate: '2026-01-24',
+    },
   ];
 
   timescale: Timescale = 'day';

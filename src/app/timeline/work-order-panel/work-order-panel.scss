@@ -301,3 +301,8 @@ input[ngbDatepicker] {
 input[readonly] {
   cursor: pointer;
 }
+
+.input.is-error {
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
