@@ -249,7 +249,27 @@ export class WorkOrderTimelineComponent {
     return diffDays(this.timelineStartDate, startOfDay(new Date())) * this.pixelsPerDay;
   }
 
+  openEdit(id: string) {
+    this.openMenuBarId = null; // close menu
+    const w = this.workOrders.find((x) => x.id === id);
+    if (!w) return;
+
+    this.panelMode = 'edit';
+    this.panelEditingId = id;
+    this.panelExternalError = null;
+    this.panelInitial = { ...w };
+    this.panelOpen = true;
+  }
+
+  deleteBar(id: string) {
+    this.openMenuBarId = null; // close menu
+    this.workOrders = this.workOrders.filter((w) => w.id !== id);
+    this.saveWorkOrders();
+  }
+
   openCreateFromClick(workCenterId: string, evt: MouseEvent) {
+    this.openMenuBarId = null; // close menu when clicking timeline
+    // ...keep the rest of your method the same
     const rect = (evt.currentTarget as HTMLElement).getBoundingClientRect();
     const x = evt.clientX - rect.left + this.scrollEl.nativeElement.scrollLeft;
     const day = Math.floor(x / this.pixelsPerDay);
@@ -265,22 +285,6 @@ export class WorkOrderTimelineComponent {
       endDate: toIso(addDays(this.timelineStartDate, day + 6)),
     };
     this.panelOpen = true;
-  }
-
-  openEdit(id: string) {
-    const w = this.workOrders.find((x) => x.id === id);
-    if (!w) return;
-
-    this.panelMode = 'edit';
-    this.panelEditingId = id;
-    this.panelExternalError = null;
-    this.panelInitial = { ...w };
-    this.panelOpen = true;
-  }
-
-  deleteBar(id: string) {
-    this.workOrders = this.workOrders.filter((w) => w.id !== id);
-    this.saveWorkOrders();
   }
 
   onPanelSubmit(value: WorkOrderPanelSubmit) {
