@@ -252,3 +252,27 @@
     }
   }
 }
+
+@media (max-width: 900px) {
+  .timeline__grid {
+    grid-template-columns: 200px 1fr; // slimmer left column
+  }
+}
+
+@media (max-width: 640px) {
+  .timeline__grid {
+    grid-template-columns: 160px 1fr; // even slimmer
+  }
+
+  .row-left {
+    font-size: 12px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .controls {
+    flex-wrap: wrap;
+  }
+}
