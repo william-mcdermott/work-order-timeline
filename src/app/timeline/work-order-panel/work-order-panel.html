@@ -1,89 +1,106 @@
 <div class="overlay" (click)="onBackdropClick()">
-  <aside class="panel" (click)="onPanelClick($event)">
+  <aside class="panel" (click)="onPanelClick($event)" role="dialog" aria-modal="true">
     <header class="panel__header">
-      <div class="panel__title">{{ titleText() }}</div>
-      <button class="icon-btn" type="button" (click)="close.emit()">✕</button>
-    </header>
-
-    <div class="panel__body" [formGroup]="form">
-      <div class="alert alert--error" *ngIf="externalError">
-        {{ externalError }}
+      <div class="panel__head-left">
+        <div class="panel__title">{{ titleText() }}</div>
+        <div class="panel__subtitle">Specify the dates, name and status for this order</div>
       </div>
 
+      <div class="panel__head-right">
+        <button class="btn btn--ghost" type="button" (click)="onCancel($event)">Cancel</button>
+        <button class="btn btn--primary" type="button" (click)="onSubmit($event)">
+          {{ primaryCtaText() }}
+        </button>
+      </div>
+    </header>
+
+    <div class="panel__divider"></div>
+
+    <div class="panel__body">
+      <!-- Work Order Name -->
       <div class="field">
         <label class="label">Work Order Name</label>
         <input
           #nameInput
           class="input"
           type="text"
-          formControlName="name"
           placeholder="e.g., Assemble Unit K"
+          [formControl]="form.controls.name"
         />
-        <div class="error" *ngIf="showNameRequired()">Name is required.</div>
+        <div class="error" *ngIf="showNameRequired()">Work order name is required.</div>
       </div>
 
+      <!-- Status -->
       <div class="field">
         <label class="label">Status</label>
 
         <ng-select
           class="ngs"
-          formControlName="status"
+          [ngClass]="'ngs--' + (form.controls.status.value || 'open')"
           [items]="statusOptions"
           bindLabel="label"
           bindValue="value"
           [clearable]="false"
           [searchable]="false"
-          placeholder="Select status"
+          [formControl]="form.controls.status"
         >
+          <!-- Selected value pill -->
+          <ng-template ng-label-tmp let-item="item">
+            <span class="status-pill status-pill--{{ item.value }}">
+              {{ item.label }}
+            </span>
+          </ng-template>
+
+          <!-- Dropdown options -->
+          <ng-template ng-option-tmp let-item="item">
+            <div class="status-option">
+              <span class="status-dot status-dot--{{ item.value }}"></span>
+              <span class="status-option__label">{{ item.label }}</span>
+            </div>
+          </ng-template>
         </ng-select>
       </div>
 
+      <!-- End date -->
       <div class="field">
-        <label class="label">Start Date</label>
-
-        <div class="date-row">
-          <input
-            class="input date-input"
-            formControlName="startDate"
-            ngbDatepicker
-            #sd="ngbDatepicker"
-            (click)="sd.open()"
-            readonly
-          />
-          <button class="date-btn" type="button" (click)="sd.toggle()">📅</button>
+        <label class="label">End date</label>
+        <input
+          class="input"
+          type="text"
+          placeholder="MM.DD.YYYY"
+          readonly
+          ngbDatepicker
+          #endDp="ngbDatepicker"
+          [autoClose]="'outside'"
+          [value]="formatDot(form.controls.endDate.value)"
+          (dateSelect)="onPickEnd($event)"
+          (click)="openEnd(endDp)"
+        />
+        <div class="error" *ngIf="showEndRequired()">End date is required.</div>
+        <div class="error" *ngIf="showDateOrderError()">
+          End date must be on or after start date.
         </div>
+      </div>
 
+      <!-- Start date -->
+      <div class="field">
+        <label class="label">Start date</label>
+        <input
+          class="input"
+          type="text"
+          placeholder="MM.DD.YYYY"
+          readonly
+          ngbDatepicker
+          #startDp="ngbDatepicker"
+          [autoClose]="'outside'"
+          [value]="formatDot(form.controls.startDate.value)"
+          (dateSelect)="onPickStart($event)"
+          (click)="openStart(startDp)"
+        />
         <div class="error" *ngIf="showStartRequired()">Start date is required.</div>
       </div>
 
-      <div class="field">
-        <label class="label">End Date</label>
-
-        <div class="date-row">
-          <input
-            class="input date-input"
-            formControlName="endDate"
-            ngbDatepicker
-            #ed="ngbDatepicker"
-            (click)="ed.open()"
-            readonly
-          />
-          <button class="date-btn" type="button" (click)="ed.toggle()">📅</button>
-        </div>
-
-        <div class="error" *ngIf="showEndRequired()">End date is required.</div>
-        <div class="error" *ngIf="showDateOrderError()">End date must be on/after start date.</div>
-      </div>
-
-      <!-- @upgrade: Custom ngb-datepicker styling to match Sketch exactly -->
-      <!-- @upgrade: Replace separate pickers with a true range picker UX -->
+      <div class="banner" *ngIf="externalError">{{ externalError }}</div>
     </div>
-
-    <footer class="panel__footer">
-      <button class="btn btn--ghost" type="button" (click)="onCancel($event)">Cancel</button>
-      <button class="btn btn--primary" type="button" (click)="onSubmit($event)">
-        {{ primaryCtaText() }}
-      </button>
-    </footer>
   </aside>
 </div>

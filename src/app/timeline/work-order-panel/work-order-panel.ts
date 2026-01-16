@@ -16,7 +16,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { NgSelectModule } from '@ng-select/ng-select';
-import { NgbDateStruct, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbDateParserFormatter,
+  NgbDateStruct,
+  NgbDatepickerModule,
+  NgbInputDatepicker,
+} from '@ng-bootstrap/ng-bootstrap';
 
 export type WorkOrderStatus = 'open' | 'in-progress' | 'complete' | 'blocked';
 export type PanelMode = 'create' | 'edit';
@@ -33,6 +38,50 @@ export type WorkOrderPanelSubmit = WorkOrderPanelInput;
 
 type StatusOption = { value: WorkOrderStatus; label: string };
 
+/**
+ * Formats dates like: MM.DD.YYYY (e.g. 01.15.2026)
+ */
+class DotDateFormatter extends NgbDateParserFormatter {
+  format(date: NgbDateStruct | null): string {
+    if (!date) return '';
+    const mm = String(date.month).padStart(2, '0');
+    const dd = String(date.day).padStart(2, '0');
+    const yyyy = String(date.year).padStart(4, '0');
+    return `${mm}.${dd}.${yyyy}`;
+  }
+
+  parse(value: string): NgbDateStruct | null {
+    if (!value) return null;
+    const v = value.trim();
+
+    // Accept MM.DD.YYYY
+    const m = v.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (m) {
+      const month = Number(m[1]);
+      const day = Number(m[2]);
+      const year = Number(m[3]);
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        return { year, month, day };
+      }
+      return null;
+    }
+
+    // Also accept ISO YYYY-MM-DD if pasted
+    const iso = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (iso) {
+      const year = Number(iso[1]);
+      const month = Number(iso[2]);
+      const day = Number(iso[3]);
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        return { year, month, day };
+      }
+      return null;
+    }
+
+    return null;
+  }
+}
+
 @Component({
   selector: 'app-work-order-panel',
   standalone: true,
@@ -40,6 +89,7 @@ type StatusOption = { value: WorkOrderStatus; label: string };
   templateUrl: './work-order-panel.html',
   styleUrls: ['./work-order-panel.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: NgbDateParserFormatter, useClass: DotDateFormatter }],
 })
 export class WorkOrderPanelComponent implements AfterViewInit {
   private readonly fb = inject(FormBuilder);
@@ -89,7 +139,6 @@ export class WorkOrderPanelComponent implements AfterViewInit {
   );
 
   ngOnInit() {
-    // hydrate from initial ISO dates
     this.form.patchValue(
       {
         name: this.initial.name ?? '',
@@ -104,7 +153,37 @@ export class WorkOrderPanelComponent implements AfterViewInit {
       this.changed.emit();
     });
   }
+formatDot(v: NgbDateStruct | null): string {
+  if (!v) return '';
+  const mm = String(v.month).padStart(2, '0');
+  const dd = String(v.day).padStart(2, '0');
+  const yyyy = String(v.year).padStart(4, '0');
+  return `${mm}.${dd}.${yyyy}`;
+}
 
+openEnd(dp: NgbInputDatepicker) {
+  dp.open();
+  const v = this.form.controls.endDate.value;
+  if (v) dp.navigateTo(v);
+  this.form.controls.endDate.markAsTouched();
+}
+
+openStart(dp: NgbInputDatepicker) {
+  dp.open();
+  const v = this.form.controls.startDate.value;
+  if (v) dp.navigateTo(v);
+  this.form.controls.startDate.markAsTouched();
+}
+
+onPickEnd(d: NgbDateStruct) {
+  this.form.controls.endDate.setValue(d);
+  this.form.controls.endDate.markAsTouched();
+}
+
+onPickStart(d: NgbDateStruct) {
+  this.form.controls.startDate.setValue(d);
+  this.form.controls.startDate.markAsTouched();
+}
   titleText(): string {
     return 'Work Order Details';
   }
@@ -136,7 +215,6 @@ export class WorkOrderPanelComponent implements AfterViewInit {
     const start = raw.startDate!;
     const end = raw.endDate!;
 
-    // normalize ordering (in case user picks end before start)
     const [a, b] = compareStruct(start, end) <= 0 ? [start, end] : [end, start];
 
     const payload: WorkOrderPanelSubmit = {
@@ -149,8 +227,6 @@ export class WorkOrderPanelComponent implements AfterViewInit {
 
     this.submit.emit(payload);
   }
-
-  // ------- error helpers -------
 
   showNameRequired(): boolean {
     const c = this.form.controls.name;
@@ -171,23 +247,17 @@ export class WorkOrderPanelComponent implements AfterViewInit {
     return this.form.touched && !!this.form.errors?.['dateOrder'];
   }
 
-  // ------- validator -------
-
   private dateOrderValidator(group: any) {
     const start: NgbDateStruct | null = group?.get?.('startDate')?.value ?? null;
     const end: NgbDateStruct | null = group?.get?.('endDate')?.value ?? null;
     if (!start || !end) return null;
     return compareStruct(end, start) < 0 ? { dateOrder: true } : null;
   }
-
-  // @upgrade: Match Sketch-perfect ng-select styling (pill, spacing, focus ring).
-  // @upgrade: Replace two-input picker with a nicer date-range UX if time allows.
 }
 
 /** -------- date helpers (local, no deps) -------- */
 
 function isoToStruct(iso: string): NgbDateStruct | null {
-  // expects YYYY-MM-DD
   if (!iso || iso.length < 10) return null;
   const [y, m, d] = iso.split('-').map((n) => Number(n));
   if (!y || !m || !d) return null;
@@ -202,7 +272,6 @@ function structToIso(s: NgbDateStruct): string {
 }
 
 function compareStruct(a: NgbDateStruct, b: NgbDateStruct): number {
-  // returns -1/0/1-ish
   if (a.year !== b.year) return a.year - b.year;
   if (a.month !== b.month) return a.month - b.month;
   return a.day - b.day;
