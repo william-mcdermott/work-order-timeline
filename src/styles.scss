@@ -1,3 +1,48 @@
 html, body {
   font-family: "Circular-Std", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
+
+.wo-tooltip .tooltip-inner {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-radius: 12px;
+  padding: 10px 12px;
+  max-width: 280px;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.24);
+  opacity: 1 !important;
+}
+
+.wo-tooltip.bs-tooltip-top .tooltip-arrow::before {
+  border-top-color: #0f172a !important;
+}
+
+.wo-tt__title {
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.wo-tt__meta {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wo-tt__pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.wo-tt__dates {
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.78);
+  white-space: nowrap;
+}

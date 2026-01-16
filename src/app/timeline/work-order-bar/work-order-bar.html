@@ -2,17 +2,33 @@
   class="bar bar--{{ bar.status }}"
   [style.left.px]="leftPx"
   [style.width.px]="widthPx"
+  [ngbTooltip]="tip"
+  triggers="mouseenter:mouseleave"
+  [autoClose]="'outside'"
+  [tooltipClass]="'wo-tooltip'"
+  [container]="'body'"
+  [placement]="'top'"
   (click)="$event.stopPropagation()"
 >
-  <div class="bar__label" title="{{ bar.name }}">
-    {{ bar.name }}
+  <ng-template #tip>
+    <div class="wo-tt">
+      <div class="wo-tt__title">{{ bar.name }}</div>
+
+      <div class="wo-tt__meta">
+        <span class="wo-tt__pill wo-tt__pill--{{ bar.status }}">{{ statusLabel() }}</span>
+        <span class="wo-tt__dates">{{ bar.startDate }} – {{ bar.endDate }}</span>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="bar__label">
+    <span class="bar__name">{{ bar.name }}</span>
+    <span class="bar__status">{{ statusLabel() }}</span>
   </div>
 
-  <span class="badge badge--{{ bar.status }}">
-    {{ statusLabel() }}
-  </span>
-
   <button class="kebab" type="button" (click)="onKebabClick($event)" aria-label="Actions">
-    …
+    <span class="kebab__dot"></span>
+    <span class="kebab__dot"></span>
+    <span class="kebab__dot"></span>
   </button>
 </div>

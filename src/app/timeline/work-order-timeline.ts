@@ -242,6 +242,8 @@ export class WorkOrderTimelineComponent {
       status: w.status,
       startDay: diffDays(this.timelineStartDate, parseIso(w.startDate)),
       endDay: diffDays(this.timelineStartDate, parseIso(w.endDate)),
+      startDate: w.startDate, // display
+      endDate: w.endDate, // display
     }));
   }
 

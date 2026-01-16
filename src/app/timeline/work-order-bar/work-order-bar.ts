@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 
 export type WorkOrderStatus = 'open' | 'in-progress' | 'complete' | 'blocked';
 
@@ -10,6 +11,9 @@ export type WorkOrderBarVM = {
   status: WorkOrderStatus;
   startDay: number;
   endDay: number;
+  // add these for tooltip display
+  startDate: string; // ISO
+  endDate: string;   // ISO
 };
 
 export type BarMenuTogglePayload = {
@@ -21,7 +25,7 @@ export type BarMenuTogglePayload = {
 @Component({
   selector: 'app-work-order-bar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NgbTooltipModule],
   templateUrl: './work-order-bar.html',
   styleUrls: ['./work-order-bar.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,7 +54,7 @@ export class WorkOrderBarComponent {
       case 'open':
         return 'Open';
       case 'in-progress':
-        return 'In progress';
+        return 'In Progress';
       case 'complete':
         return 'Complete';
       case 'blocked':
