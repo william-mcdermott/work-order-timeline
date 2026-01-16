@@ -16,7 +16,7 @@
 
   /* Dropdown is now rendered globally, so no need for menu overflow hacks */
   overflow: hidden;
-
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
   z-index: 10;
 }
 
@@ -86,6 +86,7 @@
   color: #0f172a;
   font-size: 18px;
   line-height: 1;
+  transition: background 120ms ease;
 
   &:hover {
     background: rgba(15, 23, 42, 0.06);
@@ -95,4 +96,10 @@
     outline: none;
     box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.35);
   }
+}
+
+.bar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+  filter: brightness(1.02);
 }
