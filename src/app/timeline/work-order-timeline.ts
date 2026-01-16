@@ -198,6 +198,11 @@ export class WorkOrderTimelineComponent {
     this.applyTimescale(ts);
     queueMicrotask(() => this.centerOnToday());
   }
+  
+  goToToday(evt?: MouseEvent) {
+    evt?.stopPropagation();
+    this.centerOnToday();
+  }
 
   private applyTimescale(ts: Timescale) {
     if (ts === 'day') {
