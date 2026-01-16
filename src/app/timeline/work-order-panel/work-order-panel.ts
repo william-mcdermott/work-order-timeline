@@ -8,7 +8,9 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
   inject,
 } from '@angular/core';
@@ -39,7 +41,7 @@ type StatusOption = { value: WorkOrderStatus; label: string };
   styleUrls: ['./work-order-panel.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WorkOrderPanelComponent implements AfterViewInit {
+export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -57,6 +59,20 @@ export class WorkOrderPanelComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     queueMicrotask(() => this.nameInput?.nativeElement?.focus());
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['initial'] && this.initial) {
+      this.form.patchValue(
+        {
+          name: this.initial.name ?? '',
+          status: this.initial.status ?? 'open',
+          startDate: isoToStruct(this.initial.startDate),
+          endDate: isoToStruct(this.initial.endDate),
+        },
+        { emitEvent: false }
+      );
+    }
   }
 
   @HostListener('document:keydown.escape')
@@ -85,16 +101,6 @@ export class WorkOrderPanelComponent implements AfterViewInit {
   );
 
   ngOnInit() {
-    this.form.patchValue(
-      {
-        name: this.initial.name ?? '',
-        status: this.initial.status ?? 'open',
-        startDate: isoToStruct(this.initial.startDate),
-        endDate: isoToStruct(this.initial.endDate),
-      },
-      { emitEvent: false }
-    );
-
     this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.changed.emit();
     });

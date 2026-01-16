@@ -9,11 +9,10 @@ export type WorkOrderBarVM = {
   workCenterId: string;
   name: string;
   status: WorkOrderStatus;
-  startDay: number;
-  endDay: number;
-  // add these for tooltip display
-  startDate: string; // ISO
-  endDate: string;   // ISO
+  leftPx: number;
+  widthPx: number;
+  startDate?: string;
+  endDate?: string;
 };
 
 export type BarMenuTogglePayload = {
@@ -32,7 +31,6 @@ export type BarMenuTogglePayload = {
 })
 export class WorkOrderBarComponent {
   @Input({ required: true }) bar!: WorkOrderBarVM;
-  @Input({ required: true }) pixelsPerDay!: number;
 
   @Input() menuOpen = false;
 
@@ -40,13 +38,11 @@ export class WorkOrderBarComponent {
   @Output() edit = new EventEmitter<string>();
   @Output() delete = new EventEmitter<string>();
 
-  get leftPx(): number {
-    return this.bar.startDay * this.pixelsPerDay;
+  get isCompact(): boolean {
+    return this.bar.widthPx < 160;
   }
-
-  get widthPx(): number {
-    const days = Math.max(1, this.bar.endDay - this.bar.startDay + 1);
-    return days * this.pixelsPerDay;
+  get isTiny(): boolean {
+    return this.bar.widthPx < 90;
   }
 
   statusLabel(): string {

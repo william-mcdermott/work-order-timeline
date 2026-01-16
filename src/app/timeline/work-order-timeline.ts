@@ -10,6 +10,7 @@ import {
   WorkOrderPanelSubmit,
   WorkOrderStatus,
 } from './work-order-panel/work-order-panel';
+import { WorkOrderBarVM } from './work-order-bar/work-order-bar';
 
 type Timescale = 'day' | 'week' | 'month';
 
@@ -198,7 +199,7 @@ export class WorkOrderTimelineComponent {
     this.applyTimescale(ts);
     queueMicrotask(() => this.centerOnToday());
   }
-  
+
   goToToday(evt?: MouseEvent) {
     evt?.stopPropagation();
     this.centerOnToday();
@@ -239,19 +240,27 @@ export class WorkOrderTimelineComponent {
     }));
   }
 
-  barsVm() {
-    return this.workOrders.map((w) => ({
-      id: w.id,
-      workCenterId: w.workCenterId,
-      name: w.name,
-      status: w.status,
-      startDay: diffDays(this.timelineStartDate, parseIso(w.startDate)),
-      endDay: diffDays(this.timelineStartDate, parseIso(w.endDate)),
-      startDate: w.startDate, // display
-      endDate: w.endDate, // display
-    }));
-  }
+  barsVm(): WorkOrderBarVM[] {
+    return this.workOrders.map((w) => {
+      const start = parseIso(w.startDate);
+      const end = parseIso(w.endDate);
 
+      const leftDays = diffDays(this.timelineStartDate, start);
+      const spanDays = Math.max(1, diffDays(start, end) + 1);
+
+      return {
+        id: w.id,
+        workCenterId: w.workCenterId,
+        name: w.name,
+        status: w.status,
+        leftPx: leftDays * this.pixelsPerDay,
+        widthPx: spanDays * this.pixelsPerDay,
+        startDate: w.startDate,
+        endDate: w.endDate,
+      };
+    });
+  }
+  
   todayLineLeftPx() {
     return diffDays(this.timelineStartDate, startOfDay(new Date())) * this.pixelsPerDay;
   }
@@ -429,16 +438,28 @@ function addDays(d: Date, days: number) {
   x.setDate(x.getDate() + days);
   return x;
 }
-function diffDays(a: Date, b: Date) {
-  return Math.round((b.getTime() - a.getTime()) / 86400000);
-}
 function parseIso(iso: string) {
+  // YYYY-MM-DD -> Date at local midnight (but diff uses UTC day number)
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(y, m - 1, d);
 }
-function toIso(d: Date) {
-  return d.toISOString().slice(0, 10);
+
+function utcDayNumber(d: Date): number {
+  // number of days since epoch in UTC (DST-safe)
+  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
 }
+
+function diffDays(a: Date, b: Date): number {
+  return utcDayNumber(b) - utcDayNumber(a);
+}
+
+function toIso(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function toShortDate(d: Date) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

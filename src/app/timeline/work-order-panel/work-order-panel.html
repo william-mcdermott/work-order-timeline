@@ -1,4 +1,4 @@
-<div class="overlay" (click)="onBackdropClick()">
+<div class="overlay" (click)="onBackdropClick()" *ngIf="initial as init">
   <aside class="panel" (click)="onPanelClick($event)" role="dialog" aria-modal="true">
     <header class="panel__header">
       <div class="panel__head-left">
@@ -79,7 +79,9 @@
         />
 
         <div class="error" *ngIf="showEndRequired()">End date is required.</div>
-        <div class="error" *ngIf="showDateOrderError()">End date must be on or after start date.</div>
+        <div class="error" *ngIf="showDateOrderError()">
+          End date must be on or after start date.
+        </div>
       </div>
 
       <!-- Start date -->
