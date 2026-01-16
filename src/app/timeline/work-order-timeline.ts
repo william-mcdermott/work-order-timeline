@@ -143,11 +143,6 @@ export class WorkOrderTimelineComponent {
     queueMicrotask(() => this.centerOnToday());
   }
 
-  goToToday(evt?: MouseEvent) {
-    evt?.stopPropagation();
-    this.centerOnToday();
-  }
-
   private applyTimescale(ts: Timescale) {
     if (ts === 'day') {
       this.pixelsPerDay = 56;
