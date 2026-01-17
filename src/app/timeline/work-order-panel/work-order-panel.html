@@ -60,7 +60,7 @@
         </ng-select>
       </div>
 
-      <!-- End date -->
+      <!-- End date (vertical) -->
       <div class="field">
         <label class="label">End date</label>
 
@@ -79,12 +79,9 @@
         />
 
         <div class="error" *ngIf="showEndRequired()">End date is required.</div>
-        <div class="error" *ngIf="showDateOrderError()">
-          End date must be on or after start date.
-        </div>
       </div>
 
-      <!-- Start date -->
+      <!-- Start date (vertical) -->
       <div class="field">
         <label class="label">Start date</label>
 
@@ -103,6 +100,11 @@
         />
 
         <div class="error" *ngIf="showStartRequired()">Start date is required.</div>
+      </div>
+
+      <!-- Date ordering error -->
+      <div class="error" *ngIf="showDateOrderError()">
+        End date must be on or after start date.
       </div>
 
       <!-- Overlap / business rule error -->
