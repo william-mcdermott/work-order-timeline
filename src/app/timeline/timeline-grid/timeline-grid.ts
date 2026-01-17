@@ -27,9 +27,8 @@ export class TimelineGridComponent {
 
   // ✅ use the bar component VM type (leftPx/widthPx)
   @Input({ required: true }) bars: WorkOrderBarVM[] = [];
-  @Input({ required: true }) pixelsPerDay = 56;
   @Input() openMenuBarId: string | null = null;
-
+  @Input({ required: true }) timescale!: 'day' | 'week' | 'month';
   @Output() rowClick = new EventEmitter<{ workCenterId: string; event: MouseEvent }>();
   @Output() toggleMenu = new EventEmitter<BarMenuTogglePayload>();
   @Output() edit = new EventEmitter<string>();
@@ -45,6 +44,12 @@ export class TimelineGridComponent {
 
   onToggleMenu(payload: BarMenuTogglePayload) {
     this.toggleMenu.emit(payload);
+  }
+
+  get colWidthPx(): number {
+    // columns are already in px, so a “day width” var is no longer needed.
+    // Use a sensible default gridline width for styling.
+    return 56;
   }
 
   trackByWc = (_: number, wc: WorkCenter) => wc.id;

@@ -41,7 +41,7 @@ export class WorkOrderBarComponent {
   get isCompact(): boolean {
     return this.bar.widthPx < 160;
   }
-  
+
   get isTiny(): boolean {
     return this.bar.widthPx < 90;
   }
@@ -50,12 +50,20 @@ export class WorkOrderBarComponent {
     return this.bar.widthPx >= 180;
   }
 
-  get showStatus(): boolean {
-    return this.bar.widthPx >= 130;
+  @Input() timescale: 'day' | 'week' | 'month' = 'day';
+
+  get allowBlobMode(): boolean {
+    return this.timescale === 'month';
   }
 
   get showName(): boolean {
-    return this.bar.widthPx >= 70;
+    if (!this.allowBlobMode) return true; // always show in day/week
+    return !this.isTiny; // month can hide when tiny
+  }
+
+  get showStatus(): boolean {
+    if (!this.allowBlobMode) return true; // always show in day/week
+    return !this.isCompact; // month can hide when compact
   }
 
   statusLabel(): string {

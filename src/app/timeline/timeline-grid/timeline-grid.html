@@ -4,11 +4,12 @@
     *ngFor="let wc of workCenters; trackBy: trackByWc; let i = index"
     [class.is-even]="i % 2 === 1"
   >
-    <div class="track" (click)="onRowClick(wc.id, $event)" [style.--colWidthPx.px]="pixelsPerDay">
+    <div class="track" (click)="onRowClick(wc.id, $event)" [style.--colWidthPx.px]="colWidthPx">
       <!-- Work order bars for this work center -->
       <app-work-order-bar
         *ngFor="let b of barsFor(wc.id); trackBy: trackById"
         [bar]="b"
+        [timescale]="timescale"
         [menuOpen]="openMenuBarId === b.id"
         (toggleMenu)="onToggleMenu($event)"
         (edit)="edit.emit($event)"

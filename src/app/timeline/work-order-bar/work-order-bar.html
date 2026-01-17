@@ -2,8 +2,8 @@
   class="bar bar--{{ bar.status }}"
   [style.left.px]="bar.leftPx"
   [style.width.px]="bar.widthPx"
-  ngbTooltipClass="wo-tooltip"
   [ngbTooltip]="tip"
+  tooltipClass="wo-tooltip"
   placement="top"
   container="body"
 >
@@ -13,10 +13,12 @@
       <span class="bar__name">{{ bar.name }}</span>
     </div>
 
+    <!-- Status pill -->
     <span class="bar__status-pill bar__status-pill--{{ bar.status }}" *ngIf="showStatus">
       {{ statusLabel() }}
     </span>
 
+    <!-- Kebab -->
     <button class="kebab" type="button" (click)="onKebabClick($event)" aria-label="Actions">
       <span class="kebab__dot"></span>
       <span class="kebab__dot"></span>

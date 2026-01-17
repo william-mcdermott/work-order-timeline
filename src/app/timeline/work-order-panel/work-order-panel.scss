@@ -11,14 +11,14 @@
 
 /* The right-side panel */
 .panel {
-  width: 591px; /* from Sketch inspector */
+  width: 591px;
   height: 100%;
   background: #ffffff;
   border-left: 1px solid rgba(15, 23, 42, 0.06);
 
   box-shadow:
-    -24px 0 60px rgba(15, 23, 42, 0.16),
-    -6px 0 18px rgba(15, 23, 42, 0.08);
+    -32px 0 80px rgba(15, 23, 42, 0.14),
+    -10px 0 24px rgba(15, 23, 42, 0.08);
 
   display: flex;
   flex-direction: column;
