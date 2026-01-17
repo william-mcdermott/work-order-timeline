@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  ViewChild,
+} from '@angular/core';
 
 import { TimelineHeaderComponent } from './timeline-header/timeline-header';
 import { TimelineGridComponent } from './timeline-grid/timeline-grid';
@@ -53,6 +59,12 @@ export class WorkOrderTimelineComponent {
 
   @ViewChild('scrollEl', { static: true })
   scrollEl!: ElementRef<HTMLDivElement>;
+
+  @HostListener('window:resize')
+  onResize() {
+    this.openMenuBarId = null;
+    this.menuRect = null;
+  }
 
   private readonly LS_KEY = 'work-order-timeline.workOrders.v1';
 
@@ -260,13 +272,13 @@ export class WorkOrderTimelineComponent {
       };
     });
   }
-  
+
   todayLineLeftPx() {
     return diffDays(this.timelineStartDate, startOfDay(new Date())) * this.pixelsPerDay;
   }
 
   openEdit(id: string) {
-    this.openMenuBarId = null; // close menu
+    this.closeMenus();
     const w = this.workOrders.find((x) => x.id === id);
     if (!w) return;
 
@@ -278,14 +290,13 @@ export class WorkOrderTimelineComponent {
   }
 
   deleteBar(id: string) {
-    this.openMenuBarId = null; // close menu
+    this.closeMenus();
     this.workOrders = this.workOrders.filter((w) => w.id !== id);
     this.saveWorkOrders();
   }
 
   openCreateFromClick(workCenterId: string, evt: MouseEvent) {
-    this.openMenuBarId = null; // close menu when clicking timeline
-    // ...keep the rest of your method the same
+    this.closeMenus();
     const rect = (evt.currentTarget as HTMLElement).getBoundingClientRect();
     const x = evt.clientX - rect.left + this.scrollEl.nativeElement.scrollLeft;
     const day = Math.floor(x / this.pixelsPerDay);
@@ -346,9 +357,13 @@ export class WorkOrderTimelineComponent {
   }
 
   onGlobalClick() {
+    this.closeMenus();
+  }
+  
+  onTimelineScroll() {
+    // close only the bar menu (keeps UX snappy)
     this.openMenuBarId = null;
     this.menuRect = null;
-    this.timescaleOpen = false;
   }
 
   private hasOverlap(candidate: WorkOrder, excludeId?: string) {
@@ -424,6 +439,12 @@ export class WorkOrderTimelineComponent {
       });
     }
     return cols;
+  }
+
+  private closeMenus() {
+    this.openMenuBarId = null;
+    this.menuRect = null;
+    this.timescaleOpen = false;
   }
 }
 

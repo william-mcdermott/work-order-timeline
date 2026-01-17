@@ -39,7 +39,7 @@
       </div>
 
       <div class="timeline__right">
-        <div class="scroll" #scrollEl>
+        <div class="scroll" #scrollEl (scroll)="onTimelineScroll()">
           <div class="scroll__content" [style.width.px]="totalWidthPx()">
             <app-timeline-header [columns]="headerColumns()"></app-timeline-header>
 
