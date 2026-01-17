@@ -5,6 +5,7 @@ export type TimelineColumnVm = {
   key: string;
   label: string;
   widthPx: number;
+  isCurrent?: boolean;
 };
 
 @Component({

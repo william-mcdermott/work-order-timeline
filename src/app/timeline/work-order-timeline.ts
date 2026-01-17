@@ -29,6 +29,7 @@ type TimelineColumn = {
   key: string;
   label: string;
   days: number;
+  start: Date; // start date of this column
 };
 
 type WorkOrder = {
@@ -248,11 +249,19 @@ export class WorkOrderTimelineComponent {
   }
 
   headerColumns() {
-    return this.columns.map((c) => ({
-      key: c.key,
-      label: c.label,
-      widthPx: c.days * this.pixelsPerDay,
-    }));
+    const today = startOfDay(new Date());
+
+    return this.columns.map((c) => {
+      const start = startOfDay(c.start);
+      const end = addDays(start, c.days - 1);
+
+      return {
+        key: c.key,
+        label: c.label,
+        widthPx: c.days * this.pixelsPerDay,
+        isCurrent: today >= start && today <= end,
+      };
+    });
   }
 
   gridColumns() {
@@ -408,11 +417,15 @@ export class WorkOrderTimelineComponent {
   }
 
   private buildDayColumns(total: number): TimelineColumn[] {
-    return Array.from({ length: total }).map((_, i) => ({
-      key: `d-${i}`,
-      label: toShortDate(addDays(this.timelineStartDate, i)),
-      days: 1,
-    }));
+    return Array.from({ length: total }).map((_, i) => {
+      const start = addDays(this.timelineStartDate, i);
+      return {
+        key: `d-${i}`,
+        label: toShortDate(start),
+        days: 1,
+        start,
+      };
+    });
   }
 
   private buildWeekColumns(totalDays: number): TimelineColumn[] {
@@ -424,13 +437,14 @@ export class WorkOrderTimelineComponent {
         key: `w-${i}`,
         label: `${toShortDate(start)}–${toShortDate(end)}`,
         days: 7,
+        start,
       };
     });
   }
 
   private buildMonthColumns(totalDays: number): TimelineColumn[] {
     const cols: TimelineColumn[] = [];
-    let cursor = this.timelineStartDate;
+    let cursor = new Date(this.timelineStartDate);
 
     while (diffDays(this.timelineStartDate, cursor) < totalDays) {
       const start = new Date(cursor);
@@ -446,8 +460,10 @@ export class WorkOrderTimelineComponent {
         key: `m-${start.getFullYear()}-${month}`,
         label: start.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }),
         days,
+        start,
       });
     }
+
     return cols;
   }
 

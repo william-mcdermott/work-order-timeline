@@ -4,6 +4,8 @@
     *ngFor="let c of columns; trackBy: trackByKey"
     [style.width.px]="c.widthPx"
   >
-    {{ c.label }}
+    <span class="cell__label">{{ c.label }}</span>
+
+    <span class="current-pill" *ngIf="c.isCurrent">Current month</span>
   </div>
 </div>
