@@ -41,8 +41,21 @@ export class WorkOrderBarComponent {
   get isCompact(): boolean {
     return this.bar.widthPx < 160;
   }
+  
   get isTiny(): boolean {
     return this.bar.widthPx < 90;
+  }
+
+  get showKebab(): boolean {
+    return this.bar.widthPx >= 180;
+  }
+
+  get showStatus(): boolean {
+    return this.bar.widthPx >= 130;
+  }
+
+  get showName(): boolean {
+    return this.bar.widthPx >= 70;
   }
 
   statusLabel(): string {

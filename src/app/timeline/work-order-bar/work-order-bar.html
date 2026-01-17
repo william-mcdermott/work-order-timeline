@@ -9,21 +9,20 @@
 >
   <div class="bar__content">
     <!-- Left: name -->
-    <div class="bar__label">
+    <div class="bar__label" *ngIf="showName">
       <span class="bar__name">{{ bar.name }}</span>
     </div>
 
-    <!-- Middle: status pill -->
-    <span class="bar__status-pill bar__status-pill--{{ bar.status }}">
+    <span class="bar__status-pill bar__status-pill--{{ bar.status }}" *ngIf="showStatus">
       {{ statusLabel() }}
     </span>
 
-    <!-- Right: kebab -->
     <button
       class="kebab"
       type="button"
       (click)="onKebabClick($event)"
       aria-label="Actions"
+      *ngIf="showKebab"
     >
       <span class="kebab__dot"></span>
       <span class="kebab__dot"></span>
