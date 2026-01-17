@@ -39,23 +39,15 @@ export class TimelineGridComponent {
   }
 
   onRowClick(workCenterId: string, evt: Event) {
-    // Only emit mouse events to the parent (parent uses clientX math)
+    // only emit mouse clicks (has coords)
     if (evt instanceof MouseEvent) {
       this.rowClick.emit({ workCenterId, event: evt });
-    } else {
-      // Keyboard activation: use center of track as click position
-      const el = evt.currentTarget as HTMLElement | null;
-      if (!el) return;
-
-      const rect = el.getBoundingClientRect();
-      const synthetic = new MouseEvent('click', {
-        bubbles: true,
-        clientX: rect.left + rect.width / 2,
-        clientY: rect.top + rect.height / 2,
-      });
-
-      this.rowClick.emit({ workCenterId, event: synthetic });
     }
+  }
+
+  onRowKeyCreate(workCenterId: string) {
+    // keyboard create: parent should default to "today" or center-of-viewport
+    this.rowClick.emit({ workCenterId, event: null as unknown as MouseEvent });
   }
 
   onToggleMenu(payload: BarMenuTogglePayload) {
@@ -66,6 +58,23 @@ export class TimelineGridComponent {
     // columns are already in px, so a “day width” var is no longer needed.
     // Use a sensible default gridline width for styling.
     return 56;
+  }
+
+  onTrackMove(evt: MouseEvent) {
+    const el = evt.currentTarget as HTMLElement;
+
+    const rect = el.getBoundingClientRect();
+    const x = evt.clientX - rect.left;
+    const y = evt.clientY - rect.top;
+
+    el.style.setProperty('--hint-x', `${x}px`);
+    el.style.setProperty('--hint-y', `${y}px`);
+  }
+
+  onTrackLeave(evt: MouseEvent) {
+    const el = evt.currentTarget as HTMLElement;
+    el.style.removeProperty('--hint-x');
+    el.style.removeProperty('--hint-y');
   }
 
   trackByWc = (_: number, wc: WorkCenter) => wc.id;
