@@ -57,6 +57,8 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
 
   @ViewChild('nameInput') nameInput!: ElementRef<HTMLInputElement>;
 
+  submitted = false;
+
   ngAfterViewInit(): void {
     queueMicrotask(() => this.nameInput?.nativeElement?.focus());
   }
@@ -72,6 +74,11 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
         },
         { emitEvent: false }
       );
+      this.form.markAsPristine();
+      this.form.markAsUntouched();
+      this.form.updateValueAndValidity({ emitEvent: false });
+
+      this.submitted = false; // ✅ reset validation UI
     }
   }
 
@@ -114,7 +121,24 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
     return this.mode === 'edit' ? 'Save' : 'Create';
   }
 
+  private resetUiState() {
+    this.submitted = false; // ✅ hide validation when closing
+    this.form.markAsPristine();
+    this.form.markAsUntouched();
+    Object.values(this.form.controls).forEach((c) => {
+      c.markAsPristine();
+      c.markAsUntouched();
+    });
+  }
+
   onBackdropClick() {
+    this.resetUiState();
+    this.close.emit();
+  }
+
+  onCancel(evt: MouseEvent) {
+    evt.stopPropagation();
+    this.resetUiState();
     this.close.emit();
   }
 
@@ -122,15 +146,10 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
     evt.stopPropagation();
   }
 
-  onCancel(evt: MouseEvent) {
-    evt.stopPropagation();
-    this.close.emit();
-  }
-
   onSubmit(evt: MouseEvent) {
     evt.stopPropagation();
 
-    this.form.markAllAsTouched();
+    this.submitted = true;
     if (this.form.invalid) return;
 
     const raw = this.form.getRawValue();
@@ -163,45 +182,38 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
     dp.open();
     const v = this.form.controls.startDate.value;
     if (v) dp.navigateTo(v);
-    this.form.controls.startDate.markAsTouched();
   }
 
   openEnd(dp: NgbInputDatepicker) {
     dp.open();
     const v = this.form.controls.endDate.value;
     if (v) dp.navigateTo(v);
-    this.form.controls.endDate.markAsTouched();
   }
 
   onPickStart(d: NgbDateStruct) {
     this.form.controls.startDate.setValue(d);
-    this.form.controls.startDate.markAsTouched();
   }
 
   onPickEnd(d: NgbDateStruct) {
     this.form.controls.endDate.setValue(d);
-    this.form.controls.endDate.markAsTouched();
   }
 
   // ----- Errors -----
 
   showNameRequired(): boolean {
-    const c = this.form.controls.name;
-    return c.touched && !!c.errors?.['required'];
+    return this.submitted && !!this.form.controls.name.errors?.['required'];
   }
 
   showStartRequired(): boolean {
-    const c = this.form.controls.startDate;
-    return c.touched && !!c.errors?.['required'];
+    return this.submitted && !!this.form.controls.startDate.errors?.['required'];
   }
 
   showEndRequired(): boolean {
-    const c = this.form.controls.endDate;
-    return c.touched && !!c.errors?.['required'];
+    return this.submitted && !!this.form.controls.endDate.errors?.['required'];
   }
 
   showDateOrderError(): boolean {
-    return this.form.touched && !!this.form.errors?.['dateOrder'];
+    return this.submitted && !!this.form.errors?.['dateOrder'];
   }
 
   private dateOrderValidator(group: any) {
