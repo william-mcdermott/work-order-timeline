@@ -4,7 +4,15 @@
     *ngFor="let wc of workCenters; trackBy: trackByWc; let i = index"
     [class.is-even]="i % 2 === 1"
   >
-    <div class="track" (click)="onRowClick(wc.id, $event)" [style.--colWidthPx.px]="colWidthPx">
+    <div
+      class="track"
+      role="button"
+      tabindex="0"
+      (click)="onRowClick(wc.id, $event)"
+      (keydown.enter)="onRowClick(wc.id, $event)"
+      (keydown.space)="onRowClick(wc.id, $event)"
+      [style.--colWidthPx.px]="colWidthPx"
+    >
       <!-- Work order bars for this work center -->
       <app-work-order-bar
         *ngFor="let b of barsFor(wc.id); trackBy: trackById"
@@ -15,7 +23,7 @@
         (edit)="edit.emit($event)"
         (delete)="delete.emit($event)"
       ></app-work-order-bar>
-      <!-- Empty-state hint (optional / can remove) -->
+
       <div class="hint" *ngIf="barsFor(wc.id).length === 0">Click to add dates</div>
     </div>
   </div>

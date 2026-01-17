@@ -3,7 +3,10 @@
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba(15, 23, 42, 0.22);
+  border: 0;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.22); /* keep your overlay bg */
+  text-align: left;
   backdrop-filter: blur(1px);
   display: flex;
   justify-content: flex-end;

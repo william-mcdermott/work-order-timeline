@@ -1,4 +1,10 @@
-<div class="page" (click)="onGlobalClick()">
+<div
+  class="page"
+  tabindex="0"
+  role="application"
+  (click)="onGlobalClick()"
+  (keydown.escape)="onGlobalClick()"
+>
   <header class="app-header">
     <div class="brand">NAOLOGIC</div>
 
@@ -7,12 +13,18 @@
     </div>
 
     <div class="controls">
-      <div class="timescale-pill" (click)="toggleTimescale($event)">
+      <button
+        type="button"
+        class="timescale-pill"
+        (click)="toggleTimescale($event)"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="timescaleOpen"
+      >
         <span class="pill-label">Timescale</span>
         <span class="pill-value">{{ timescaleLabel }}</span>
         <span class="chevron" aria-hidden="true"></span>
 
-        <div class="timescale-menu" *ngIf="timescaleOpen" (click)="$event.stopPropagation()">
+        <div class="timescale-menu" *ngIf="timescaleOpen" role="menu">
           <button
             type="button"
             class="menu-item"
@@ -20,11 +32,12 @@
             [class.is-selected]="opt.value === timescale"
             [class.is-disabled]="opt.value === 'hour'"
             (click)="selectTimescale(opt.value, $event)"
+            role="menuitem"
           >
             {{ opt.label }}
           </button>
         </div>
-      </div>
+      </button>
       <button class="today-btn" type="button" (click)="goToToday($event)">Today</button>
     </div>
   </header>
@@ -68,7 +81,6 @@
     *ngIf="openMenuBarId && menuRect"
     [style.left.px]="menuRect.left"
     [style.top.px]="menuRect.bottom + 8"
-    (click)="$event.stopPropagation()"
   >
     <button type="button" (click)="openEdit(openMenuBarId!)">Edit</button>
     <button type="button" (click)="deleteBar(openMenuBarId!)">Delete</button>
@@ -80,7 +92,7 @@
     [initial]="panelInitial"
     [externalError]="panelExternalError"
     (changed)="onPanelChanged()"
-    (close)="closePanel()"
-    (submit)="onPanelSubmit($event)"
+    (panelClosed)="closePanel()"
+    (panelSubmitted)="onPanelSubmit($event)"
   ></app-work-order-panel>
 </div>

@@ -1,5 +1,14 @@
-<div class="overlay" (click)="onBackdropClick()" *ngIf="initial as init">
-  <aside class="panel" (click)="onPanelClick($event)" role="dialog" aria-modal="true">
+<div
+  class="overlay"
+  *ngIf="initial as init"
+  role="button"
+  tabindex="0"
+  aria-label="Close work order panel"
+  (click)="onBackdropClick($event)"
+  (keydown.enter)="onBackdropClick($event)"
+  (keydown.space)="onBackdropClick($event)"
+>
+  <aside class="panel" role="dialog" aria-modal="true" tabindex="0">
     <header class="panel__header">
       <div class="panel__head-left">
         <div class="panel__title">{{ titleText() }}</div>
@@ -19,8 +28,9 @@
     <div class="panel__body">
       <!-- Work Order Name -->
       <div class="field">
-        <label class="label">Work Order Name</label>
+        <label class="label" for="woName">Work Order Name</label>
         <input
+          id="woName"
           #nameInput
           class="input"
           type="text"
@@ -33,9 +43,10 @@
 
       <!-- Status -->
       <div class="field">
-        <label class="label">Status</label>
+        <label class="label" for="woStatus">Status</label>
 
         <ng-select
+          id="woStatus"
           class="ngs"
           [ngClass]="'ngs--' + (form.controls.status.value || 'open')"
           [items]="statusOptions"
@@ -62,9 +73,10 @@
 
       <!-- End date (vertical) -->
       <div class="field">
-        <label class="label">End date</label>
+        <label class="label" for="woEnd">End date</label>
 
         <input
+          id="woEnd"
           class="input"
           type="text"
           placeholder="MM.DD.YYYY"
@@ -75,17 +87,17 @@
           [value]="formatDot(form.controls.endDate.value)"
           [class.is-error]="showEndRequired() || showDateOrderError() || !!externalError"
           (dateSelect)="onPickEnd($event)"
-          (click)="openEnd(endDp)"
+          (focus)="openEnd(endDp)"
         />
-
         <div class="error" *ngIf="showEndRequired()">End date is required.</div>
       </div>
 
       <!-- Start date (vertical) -->
       <div class="field">
-        <label class="label">Start date</label>
+        <label class="label" for="woStart">Start date</label>
 
         <input
+          id="woStart"
           class="input"
           type="text"
           placeholder="MM.DD.YYYY"
@@ -96,16 +108,13 @@
           [value]="formatDot(form.controls.startDate.value)"
           [class.is-error]="showStartRequired() || showDateOrderError() || !!externalError"
           (dateSelect)="onPickStart($event)"
-          (click)="openStart(startDp)"
+          (focus)="openStart(startDp)"
         />
-
         <div class="error" *ngIf="showStartRequired()">Start date is required.</div>
       </div>
 
       <!-- Date ordering error -->
-      <div class="error" *ngIf="showDateOrderError()">
-        End date must be on or after start date.
-      </div>
+      <div class="error" *ngIf="showDateOrderError()">End date must be on or after start date.</div>
 
       <!-- Overlap / business rule error -->
       <div class="banner" *ngIf="externalError">{{ externalError }}</div>

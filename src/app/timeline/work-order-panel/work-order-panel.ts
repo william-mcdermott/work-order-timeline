@@ -9,12 +9,13 @@ import {
   HostListener,
   Input,
   OnChanges,
+  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
   inject,
 } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDateStruct, NgbDatepickerModule, NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
@@ -41,7 +42,7 @@ type StatusOption = { value: WorkOrderStatus; label: string };
   styleUrls: ['./work-order-panel.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
+export class WorkOrderPanelComponent implements AfterViewInit, OnChanges, OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -51,8 +52,8 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
   /** Parent overlap error (or other business rule error) */
   @Input() externalError: string | null = null;
 
-  @Output() close = new EventEmitter<void>();
-  @Output() submit = new EventEmitter<WorkOrderPanelSubmit>();
+  @Output() panelClosed = new EventEmitter<void>();
+  @Output() panelSubmitted = new EventEmitter<WorkOrderPanelSubmit>();
   @Output() changed = new EventEmitter<void>();
 
   @ViewChild('nameInput') nameInput!: ElementRef<HTMLInputElement>;
@@ -84,7 +85,7 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
 
   @HostListener('document:keydown.escape')
   onEsc() {
-    this.close.emit();
+    this.panelClosed.emit();
   }
 
   statusOptions: StatusOption[] = [
@@ -131,19 +132,16 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
     });
   }
 
-  onBackdropClick() {
+  onBackdropClick(evt: Event) {
+    if (evt.target !== evt.currentTarget) return; // clicked inside panel; ignore
     this.resetUiState();
-    this.close.emit();
+    this.panelClosed.emit();
   }
 
   onCancel(evt: MouseEvent) {
     evt.stopPropagation();
     this.resetUiState();
-    this.close.emit();
-  }
-
-  onPanelClick(evt: MouseEvent) {
-    evt.stopPropagation();
+    this.panelClosed.emit();
   }
 
   onSubmit(evt: MouseEvent) {
@@ -165,7 +163,7 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
       endDate: structToIso(b),
     };
 
-    this.submit.emit(payload);
+    this.panelSubmitted.emit(payload);
   }
 
   // ----- Date input display helpers -----
@@ -216,7 +214,7 @@ export class WorkOrderPanelComponent implements AfterViewInit, OnChanges {
     return this.submitted && !!this.form.errors?.['dateOrder'];
   }
 
-  private dateOrderValidator(group: any) {
+  private dateOrderValidator(group: AbstractControl) {
     const start: NgbDateStruct | null = group?.get?.('startDate')?.value ?? null;
     const end: NgbDateStruct | null = group?.get?.('endDate')?.value ?? null;
     if (!start || !end) return null;

@@ -36,6 +36,7 @@
     transparent 56px
   );
   cursor: pointer;
+  outline: none;
   transition: background 120ms ease;
 
 }
@@ -44,6 +45,11 @@
 .track:hover {
   background: rgba(15, 23, 42, 0.04);
   background-color: rgba(99, 102, 241, 0.05);
+}
+
+.track:focus-visible {
+  box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.35);
+  border-radius: 12px;
 }
 
 /* Layer that contains the bars */

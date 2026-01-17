@@ -38,8 +38,24 @@ export class TimelineGridComponent {
     return this.bars.filter((b) => b.workCenterId === workCenterId);
   }
 
-  onRowClick(workCenterId: string, evt: MouseEvent) {
-    this.rowClick.emit({ workCenterId, event: evt });
+  onRowClick(workCenterId: string, evt: Event) {
+    // Only emit mouse events to the parent (parent uses clientX math)
+    if (evt instanceof MouseEvent) {
+      this.rowClick.emit({ workCenterId, event: evt });
+    } else {
+      // Keyboard activation: use center of track as click position
+      const el = evt.currentTarget as HTMLElement | null;
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+      const synthetic = new MouseEvent('click', {
+        bubbles: true,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      });
+
+      this.rowClick.emit({ workCenterId, event: synthetic });
+    }
   }
 
   onToggleMenu(payload: BarMenuTogglePayload) {
