@@ -1,287 +1,265 @@
-/* Overlay */
+/* Overlay behind the panel */
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
-  background: rgba(15, 23, 42, 0.12);
+  z-index: 2000;
+  background: rgba(15, 23, 42, 0.22);
+  backdrop-filter: blur(1px);
   display: flex;
   justify-content: flex-end;
 }
 
-/* Panel shell */
+/* The right-side panel */
 .panel {
-  width: 520px;
+  width: 591px; /* from Sketch inspector */
   height: 100%;
   background: #ffffff;
-  border-left: 1px solid #e2e8f0;
-  box-shadow: -20px 0 60px rgba(15, 23, 42, 0.12);
+  border-left: 1px solid rgba(15, 23, 42, 0.06);
+
+  box-shadow:
+    -24px 0 60px rgba(15, 23, 42, 0.16),
+    -6px 0 18px rgba(15, 23, 42, 0.08);
+
   display: flex;
   flex-direction: column;
 }
 
 /* Header */
 .panel__header {
-  padding: 18px 20px 14px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  padding: 18px 20px 14px 20px;
 }
 
 .panel__head-left {
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .panel__title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 900;
   color: #0f172a;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .panel__subtitle {
-  margin-top: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: #64748b;
+  color: rgba(15, 23, 42, 0.6);
+  line-height: 1.25;
 }
 
 .panel__head-right {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
 }
 
 /* Divider */
 .panel__divider {
   height: 1px;
-  background: #e2e8f0;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.08);
 }
 
 /* Body */
 .panel__body {
-  padding: 18px 20px 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  padding: 18px 20px 24px 20px;
   overflow: auto;
 }
 
-/* Field */
+/* Fields */
 .field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 18px;
 }
 
 .label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
-  color: #64748b;
+  color: rgba(15, 23, 42, 0.55);
+  letter-spacing: 0.01em;
 }
 
 /* Inputs */
 .input {
   width: 100%;
   height: 44px;
-  padding: 0 14px;
   border-radius: 10px;
-  border: 1px solid #d7e0f0;
-  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  padding: 0 12px;
+
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   color: #0f172a;
+
   outline: none;
-  box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  background: #ffffff;
 
-  &::placeholder {
-    color: #94a3b8;
-    font-weight: 800;
-  }
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
 
-  &:focus {
-    border-color: rgba(59, 130, 246, 0.6);
-    box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.35);
-  }
+.input::placeholder {
+  color: rgba(15, 23, 42, 0.38);
+  font-weight: 700;
+}
+
+.input:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
 }
 
 .input.is-error {
-  border-color: rgba(239, 68, 68, 0.65);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }
 
 /* Buttons */
 .btn {
-  height: 34px;
+  height: 36px;
   padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid transparent;
+  border-radius: 10px;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 800;
+  border: 1px solid transparent;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
 }
 
 .btn--ghost {
   background: #ffffff;
-  border-color: #d7e0f0;
-  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.12);
+  color: rgba(15, 23, 42, 0.9);
+}
 
-  &:hover {
-    background: #f8fafc;
-  }
+.btn--ghost:hover {
+  background: rgba(15, 23, 42, 0.03);
 }
 
 .btn--primary {
-  background: #3b5cff;
+  background: #4f46e5;
+  border-color: #4f46e5;
   color: #ffffff;
-  border-color: #3b5cff;
-
-  &:hover {
-    filter: brightness(0.98);
-  }
 }
 
-/* Errors */
+.btn--primary:hover {
+  filter: brightness(0.98);
+}
+
+/* Errors + banner */
 .error {
   font-size: 12px;
-  font-weight: 800;
-  color: #ef4444;
+  font-weight: 700;
+  color: rgba(239, 68, 68, 0.92);
 }
 
 .banner {
-  margin-top: 4px;
+  margin-top: 10px;
   padding: 10px 12px;
   border-radius: 12px;
   background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  color: rgba(239, 68, 68, 0.95);
   font-size: 12px;
-  font-weight: 900;
-  color: #b91c1c;
+  font-weight: 800;
 }
 
-/* --------------------------
-   ng-select (Status)
-   -------------------------- */
+/* -------- ng-select styling -------- */
 
 :host ::ng-deep .ngs .ng-select-container {
-  height: 44px !important;
-  min-height: 44px !important;
-  border-radius: 10px !important;
-  border: 1px solid #d7e0f0 !important;
-  box-shadow: none !important;
-  padding: 0 12px !important;
-  align-items: center !important;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  padding: 0 10px;
+  box-shadow: none;
 }
 
 :host ::ng-deep .ngs.ng-select-focused .ng-select-container {
-  border-color: rgba(59, 130, 246, 0.6) !important;
-  box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.35) !important;
-}
-
-:host ::ng-deep .ngs .ng-value-container {
-  padding: 0 !important;
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
 }
 
 :host ::ng-deep .ngs .ng-arrow-wrapper {
-  width: 24px !important;
+  width: 26px;
 }
 
 :host ::ng-deep .ngs .ng-arrow {
-  border-color: #94a3b8 transparent transparent !important;
-  border-width: 6px 6px 0 !important;
+  border-color: rgba(15, 23, 42, 0.4) transparent transparent;
 }
 
-/* Dropdown panel */
-:host ::ng-deep .ng-dropdown-panel {
-  border-radius: 12px !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12) !important;
-  overflow: hidden !important;
-}
-
-:host ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
-  padding: 10px 12px !important;
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  color: #0f172a !important;
-}
-
-:host ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked {
-  background: #f1f5ff !important;
-}
-
-/* Status pill (selected value) */
+/* pill inside the collapsed select */
 .status-pill {
   display: inline-flex;
   align-items: center;
-  height: 28px;
+  height: 26px;
   padding: 0 12px;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 900;
-  border: 1px solid transparent;
+  border: 1px solid rgba(15, 23, 42, 0.12);
 }
 
-/* Open */
+/* status colors (close to your bars) */
 .status-pill--open {
   background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.25);
-  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.22);
+  color: rgba(37, 99, 235, 1);
 }
 
-/* In Progress */
 .status-pill--in-progress {
-  background: rgba(99, 102, 241, 0.12);
-  border-color: rgba(99, 102, 241, 0.25);
-  color: #4f46e5;
+  background: rgba(99, 102, 241, 0.14);
+  border-color: rgba(99, 102, 241, 0.26);
+  color: rgba(79, 70, 229, 1);
 }
 
-/* Complete */
 .status-pill--complete {
-  background: rgba(34, 197, 94, 0.12);
-  border-color: rgba(34, 197, 94, 0.25);
-  color: #15803d;
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.24);
+  color: rgba(22, 163, 74, 1);
 }
 
-/* Blocked */
 .status-pill--blocked {
-  background: rgba(249, 115, 22, 0.14);
-  border-color: rgba(249, 115, 22, 0.28);
-  color: #c2410c;
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.26);
+  color: rgba(180, 83, 9, 1);
 }
 
-/* Dropdown option layout */
+/* dropdown options */
 .status-option {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 8px 2px;
 }
 
 .status-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
-  background: #cbd5e1;
 }
 
 .status-dot--open {
-  background: #3b82f6;
+  background: rgba(37, 99, 235, 1);
 }
+
 .status-dot--in-progress {
-  background: #6366f1;
+  background: rgba(79, 70, 229, 1);
 }
+
 .status-dot--complete {
-  background: #22c55e;
+  background: rgba(22, 163, 74, 1);
 }
+
 .status-dot--blocked {
-  background: #f97316;
+  background: rgba(180, 83, 9, 1);
 }
 
 .status-option__label {
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(15, 23, 42, 0.9);
 }

@@ -143,7 +143,7 @@ export class WorkOrderTimelineComponent {
     },
   ];
 
-  timescale: Timescale = 'day';
+  timescale: Timescale = 'month';
   pixelsPerDay = 56;
   totalDays = 29;
 

@@ -19,6 +19,12 @@
   background: #eef2ff;
 }
 
+.bar:hover .kebab,
+.kebab:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .bar__content {
   height: 100%;
   display: flex;
@@ -98,6 +104,10 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
 
   &:hover {
     background: rgba(15, 23, 42, 0.1);
