@@ -218,19 +218,29 @@ export class WorkOrderTimelineComponent {
   }
 
   private applyTimescale(ts: Timescale) {
+    const today = startOfDay(new Date());
+
     if (ts === 'day') {
+      this.timelineStartDate = startOfDay(addDays(today, -14));
       this.pixelsPerDay = 56;
       this.totalDays = 29;
       this.columns = this.buildDayColumns(this.totalDays);
-    } else if (ts === 'week') {
-      this.pixelsPerDay = 20;
-      this.totalDays = 112;
-      this.columns = this.buildWeekColumns(this.totalDays);
-    } else {
-      this.pixelsPerDay = 8;
-      this.totalDays = 365;
-      this.columns = this.buildMonthColumns(this.totalDays);
+      return;
     }
+
+    if (ts === 'week') {
+      this.timelineStartDate = startOfWeek(addDays(today, -56)); // ~8 weeks back
+      this.pixelsPerDay = 20;
+      this.totalDays = 112; // 16 weeks
+      this.columns = this.buildWeekColumns(this.totalDays);
+      return;
+    }
+
+    // month
+    this.timelineStartDate = startOfMonth(addMonths(today, -6));
+    this.pixelsPerDay = 8;
+    this.totalDays = 365;
+    this.columns = this.buildMonthColumns(this.totalDays);
   }
 
   totalWidthPx() {
@@ -359,7 +369,7 @@ export class WorkOrderTimelineComponent {
   onGlobalClick() {
     this.closeMenus();
   }
-  
+
   onTimelineScroll() {
     // close only the bar menu (keeps UX snappy)
     this.openMenuBarId = null;
@@ -459,6 +469,28 @@ function addDays(d: Date, days: number) {
   x.setDate(x.getDate() + days);
   return x;
 }
+
+function startOfWeek(d: Date) {
+  // Monday start (change to Sunday if you want)
+  const x = startOfDay(d);
+  const day = x.getDay(); // 0=Sun..6=Sat
+  const diff = (day + 6) % 7; // Mon=0 ... Sun=6
+  x.setDate(x.getDate() - diff);
+  return x;
+}
+
+function startOfMonth(d: Date) {
+  const x = startOfDay(d);
+  x.setDate(1);
+  return x;
+}
+
+function addMonths(d: Date, months: number) {
+  const x = new Date(d);
+  x.setMonth(x.getMonth() + months);
+  return x;
+}
+
 function parseIso(iso: string) {
   // YYYY-MM-DD -> Date at local midnight (but diff uses UTC day number)
   const [y, m, d] = iso.split('-').map(Number);
