@@ -35,10 +35,10 @@
     transparent 1px,
     transparent 56px
   );
+
   cursor: pointer;
   outline: none;
   transition: background 120ms ease;
-
 }
 
 /* Hover state (RGBA tint, not opacity) */
@@ -58,14 +58,20 @@
   inset: 0;
 }
 
+.bar {
+  position: absolute;
+}
+
 /* Empty-row hint */
 .add-hint {
   position: absolute;
 
-  /* follow mouse (fallback to center if not set yet) */
+  /* follow clamped mouse X (fallback to center) */
   left: var(--hint-x, 50%);
-  top: var(--hint-y, 50%);
-  transform: translate(12px, -50%);
+  top: 50%;
+
+  /* center the pill on the mouse X so it won’t clip when clamped */
+  transform: translate(-50%, -50%);
 
   height: 28px;
   padding: 0 12px;
@@ -77,9 +83,11 @@
   font-size: 12px;
   font-weight: 800;
 
+  /* looks “coded into the row” */
   background: #ffffff;
   border: 1px solid rgba(15, 23, 42, 0.12);
   color: rgba(15, 23, 42, 0.75);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.10);
 
   opacity: 0;
   transition: opacity 120ms ease;
@@ -87,10 +95,6 @@
   z-index: 2;
 
   white-space: nowrap;
-}
-
-.bar {
-  position: absolute;
 }
 
 .row:hover .track {

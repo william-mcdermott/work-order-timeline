@@ -6,11 +6,15 @@
   >
     <div
       class="track"
+      #trackEl
       role="button"
       tabindex="0"
       (click)="onRowClick(wc.id, $event)"
-      (mousemove)="onTrackMove($event)"
-      (mouseleave)="onTrackLeave($event)"
+      (keydown.enter)="onRowKeyCreate(wc.id, trackEl)"
+      (keydown.space)="onRowKeyCreate(wc.id, trackEl)"
+      (mousemove)="onTrackMove(wc.id, $event, trackEl)"
+      (mouseleave)="onTrackLeave(trackEl)"
+      [style.--colWidthPx.px]="colWidthPx"
     >
       <app-work-order-bar
         *ngFor="let b of barsFor(wc.id); trackBy: trackById"
@@ -22,7 +26,10 @@
         (delete)="delete.emit($event)"
       ></app-work-order-bar>
 
-      <div class="add-hint" *ngIf="barsFor(wc.id).length === 0">Click to add dates</div>
+      <!-- shown only for empty rows; positioned by CSS var -->
+      <div class="add-hint" *ngIf="barsFor(wc.id).length === 0">
+        Click to add dates
+      </div>
     </div>
   </div>
 </div>

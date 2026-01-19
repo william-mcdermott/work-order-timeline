@@ -45,11 +45,6 @@ export class TimelineGridComponent {
     }
   }
 
-  onRowKeyCreate(workCenterId: string) {
-    // keyboard create: parent should default to "today" or center-of-viewport
-    this.rowClick.emit({ workCenterId, event: null as unknown as MouseEvent });
-  }
-
   onToggleMenu(payload: BarMenuTogglePayload) {
     this.toggleMenu.emit(payload);
   }
@@ -59,24 +54,47 @@ export class TimelineGridComponent {
     // Use a sensible default gridline width for styling.
     return 56;
   }
+  private readonly hintWidthPx = 170; // tweak until it matches the pill width
+  private readonly hintEdgePadPx = 14;
 
-  onTrackMove(evt: MouseEvent) {
-    const el = evt.currentTarget as HTMLElement;
+  onTrackMove(workCenterId: string, evt: MouseEvent, el: HTMLElement) {
+    // Only show/move hint on empty rows
+    if (this.barsFor(workCenterId).length !== 0) return;
 
     const rect = el.getBoundingClientRect();
-    const x = evt.clientX - rect.left;
-    const y = evt.clientY - rect.top;
+    const xRaw = evt.clientX - rect.left;
 
+    const half = this.hintWidthPx / 2;
+    const min = this.hintEdgePadPx + half;
+    const max = rect.width - this.hintEdgePadPx - half;
+
+    const x = clamp(xRaw, min, max);
     el.style.setProperty('--hint-x', `${x}px`);
-    el.style.setProperty('--hint-y', `${y}px`);
   }
 
-  onTrackLeave(evt: MouseEvent) {
-    const el = evt.currentTarget as HTMLElement;
+  onTrackLeave(el: HTMLElement) {
     el.style.removeProperty('--hint-x');
-    el.style.removeProperty('--hint-y');
   }
 
+  onRowKeyCreate(workCenterId: string, el: HTMLElement) {
+    // Center-based synthetic click so parent math doesn't explode
+    const rect = el.getBoundingClientRect();
+    const clientX = rect.left + rect.width / 2;
+    const clientY = rect.top + rect.height / 2;
+
+    const synthetic = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      clientX,
+      clientY,
+    });
+
+    this.rowClick.emit({ workCenterId, event: synthetic });
+  }
   trackByWc = (_: number, wc: WorkCenter) => wc.id;
   trackById = (_: number, b: WorkOrderBarVM) => b.id;
+}
+
+function clamp(v: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, v));
 }
