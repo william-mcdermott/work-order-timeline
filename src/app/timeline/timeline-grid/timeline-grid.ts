@@ -55,10 +55,9 @@ export class TimelineGridComponent {
     return 56;
   }
   private readonly hintWidthPx = 170; // tweak until it matches the pill width
-  private readonly hintEdgePadPx = 14;
+  private readonly hintEdgePadPx = 12;
 
   onTrackMove(workCenterId: string, evt: MouseEvent, el: HTMLElement) {
-    // Only show/move hint on empty rows
     if (this.barsFor(workCenterId).length !== 0) return;
 
     const rect = el.getBoundingClientRect();
@@ -72,8 +71,8 @@ export class TimelineGridComponent {
     el.style.setProperty('--hint-x', `${x}px`);
   }
 
-  onTrackLeave(el: HTMLElement) {
-    el.style.removeProperty('--hint-x');
+  onTrackLeave(workCenterId: string) {
+    if (this.barsFor(workCenterId).length !== 0) return;
   }
 
   onRowKeyCreate(workCenterId: string, el: HTMLElement) {

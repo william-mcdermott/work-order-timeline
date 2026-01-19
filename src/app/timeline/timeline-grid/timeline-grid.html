@@ -13,7 +13,7 @@
       (keydown.enter)="onRowKeyCreate(wc.id, trackEl)"
       (keydown.space)="onRowKeyCreate(wc.id, trackEl)"
       (mousemove)="onTrackMove(wc.id, $event, trackEl)"
-      (mouseleave)="onTrackLeave(trackEl)"
+      (mouseleave)="onTrackLeave(wc.id)"
       [style.--colWidthPx.px]="colWidthPx"
     >
       <app-work-order-bar
